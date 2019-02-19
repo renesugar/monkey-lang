@@ -69,6 +69,10 @@ type REPL struct {
 }
 
 func New(user string, args []string, opts *Options) *REPL {
+	object.StandardInput = os.Stdin
+	object.StandardOutput = os.Stdout
+	object.ExitFunction = os.Exit
+
 	return &REPL{user, args, opts}
 }
 
@@ -228,11 +232,29 @@ func (r *REPL) StartExecLoop(in io.Reader, out io.Writer, state *VMState) {
 }
 
 func (r *REPL) Run() {
-	if len(r.args) == 1 {
+	object.Arguments = make([]string, len(r.args))
+	copy(object.Arguments, r.args)
+
+	if len(r.args) == 0 {
+		fmt.Printf("Hello %s! This is the Monkey programming language!\n", r.user)
+		fmt.Printf("Feel free to type in commands\n")
+		if r.opts.Engine == "eval" {
+			r.StartEvalLoop(os.Stdin, os.Stdout, nil)
+		} else {
+			r.StartExecLoop(os.Stdin, os.Stdout, nil)
+		}
+		return
+	}
+
+	if len(r.args) > 0 {
 		f, err := os.Open(r.args[0])
 		if err != nil {
 			log.Fatalf("could not open source file %s: %s", r.args[0], err)
 		}
+
+		// Remove program argument (zero)
+		r.args = r.args[1:]
+		object.Arguments = object.Arguments[1:]
 
 		if r.opts.Engine == "eval" {
 			env := r.Eval(f)
@@ -244,14 +266,6 @@ func (r *REPL) Run() {
 			if r.opts.Interactive {
 				r.StartExecLoop(os.Stdin, os.Stdout, state)
 			}
-		}
-	} else {
-		fmt.Printf("Hello %s! This is the Monkey programming language!\n", r.user)
-		fmt.Printf("Feel free to type in commands\n")
-		if r.opts.Engine == "eval" {
-			r.StartEvalLoop(os.Stdin, os.Stdout, nil)
-		} else {
-			r.StartExecLoop(os.Stdin, os.Stdout, nil)
 		}
 	}
 }
