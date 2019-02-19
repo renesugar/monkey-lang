@@ -11,15 +11,31 @@ endif
 
 syntax case match
 
-syntax keyword xType true false null
+syntax keyword xType true false null int str bool array hash
 
 syntax keyword xKeyword fn if else return while
 
 syntax keyword xFunction len input print first last rest push pop exit assert
+syntax keyword xFunction bool int str typeof args lower upper join split find
+syntax keyword xFunction read write
 
-syntax keyword xOperator == != < > !
-syntax keyword xOperator + - * /
-syntax keyword xOperator := =
+syntax match xOperator "\v\=\="
+syntax match xOperator "\v!\="
+syntax match xOperator "\v<"
+syntax match xOperator "\v>"
+syntax match xOperator "\v!"
+syntax match xOperator "\v\+"
+syntax match xOperator "\v-"
+syntax match xOperator "\v\*"
+syntax match xOperator "\v/"
+syntax match xOperator "\v:\="
+syntax match xOperator "\v\="
+syntax match xOperator "\v&"
+syntax match xOperator "\v\|"
+syntax match xOperator "\v^"
+syntax match xOperator "\v\~"
+syntax match xOperator "\v&&"
+syntax match xOperator "\v\|\|"
 
 syntax region xString start=/"/ skip=/\\./ end=/"/
 
@@ -30,8 +46,7 @@ highlight link xType Type
 highlight link xKeyword Keyword
 highlight link xFunction Function
 highlight link xString String
- highlight link xComment Comment
+highlight link xComment Comment
 highlight link xOperator Operator
-highlight Operator ctermfg=5
 
 let b:current_syntax = "monkey"
