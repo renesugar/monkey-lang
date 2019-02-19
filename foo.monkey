@@ -1,3 +1,0 @@
-#!./monkey-lang
-
-print(args())
