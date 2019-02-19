@@ -29,6 +29,7 @@ var Builtins = map[string]*Builtin{
 	"find":   &Builtin{Name: "find", Fn: Find},
 	"read":   &Builtin{Name: "read", Fn: Read},
 	"write":  &Builtin{Name: "write", Fn: Write},
+	"ffi":    &Builtin{Name: "ffi", Fn: FFI},
 }
 
 // BuiltinsIndex ...
