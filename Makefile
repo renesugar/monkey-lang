@@ -1,4 +1,4 @@
-.PHONY: dev build install image profile bench test clean
+.PHONY: dev build install image release profile bench test clean
 
 CGO_ENABLED=0
 COMMIT=$(shell git rev-parse --short HEAD)
@@ -19,6 +19,9 @@ install: build
 
 image:
 	@docker build -t prologic/monkey-lang .
+
+release:
+	@./tools/release.sh
 
 profile:
 	@go test -cpuprofile cpu.prof -memprofile mem.prof -v -bench ./...
