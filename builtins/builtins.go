@@ -42,6 +42,8 @@ var Builtins = map[string]*Builtin{
 	"id":     &Builtin{Name: "id", Fn: IdOf},
 	"oct":    &Builtin{Name: "oct", Fn: Oct},
 	"pow":    &Builtin{Name: "pow", Fn: Pow},
+	"min":    &Builtin{Name: "min", Fn: Min},
+	"max":    &Builtin{Name: "max", Fn: Max},
 }
 
 // BuiltinsIndex ...
