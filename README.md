@@ -395,10 +395,40 @@ Operator   | Types           | Action
   Reads the contents of the file `filename` and returns it as a `str`.
 - `write(filename, data)`
   Writes `data` to a file `filename`.
+- `abs(n)`
+  Returns the absolute value of the `n`.
+- pow(x, y)`
+  Returns `x` to the power of `y` as `int`(s).
+- `divmod(a, b)`
+  Returns an array containing the  quotient and remainder of `a` and `b` as `int`(s).
+  Equivilent to `[a / b, b % b]`.
+- `bin(n`)
+  Returns the binary representation of `n` as a `str`.
+- `hex(n)`
+  Returns the hexidecimal representation of `n` as a `str`.
+- `oct(n)`
+  Returns the octal representation of `n` as a `str`.
+- `ord(c)`
+  Returns the ordincal value of the character `c` as an `int`.
+- `chr(n)`
+  Returns the character value of `n` as a `str`.
+- `hash(any)`
+  Returns the hash value of `any` as an `int`.
+- `id(any)`
+  Returns the identity of `any` as an `int`.
 
 Coming soon... 
 
-- `sort(list[, func])` sorts the list in place using a stable sort, and returns nil. Elements in the list must be orderable with `<` (int, str, or list of those). If a key function is provided, it must take the element as an argument and return an orderable value to use as the sort key.
+- `sorted(array[, key])`
+  Sorts the `array` using a stable sort, and returns  a new `array`..
+  Elements in the `array` must be orderable with `<` (`int`, `str`, or `array` of those).
+  If a `key` function is provided, it must take the element as an argument and return an orderable value to use as the sort key.
+- `reverse(array)`
+  Reverses the array `array` and returns a new `array`.
+- `min(array)`
+  Returns the minimum value of elements in `array`.
+- `max(array)`
+  Returns the maximum value of elements in `array`.
 
 ### Objects
 

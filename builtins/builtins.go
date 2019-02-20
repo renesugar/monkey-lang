@@ -32,6 +32,16 @@ var Builtins = map[string]*Builtin{
 	"read":   &Builtin{Name: "read", Fn: Read},
 	"write":  &Builtin{Name: "write", Fn: Write},
 	"ffi":    &Builtin{Name: "ffi", Fn: FFI},
+	"abs":    &Builtin{Name: "abs", Fn: Abs},
+	"bin":    &Builtin{Name: "bin", Fn: Bin},
+	"hex":    &Builtin{Name: "hex", Fn: Hex},
+	"ord":    &Builtin{Name: "ord", Fn: Ord},
+	"chr":    &Builtin{Name: "chr", Fn: Chr},
+	"divmod": &Builtin{Name: "divmod", Fn: Divmod},
+	"hash":   &Builtin{Name: "hash", Fn: HashOf},
+	"id":     &Builtin{Name: "id", Fn: IdOf},
+	"oct":    &Builtin{Name: "oct", Fn: Oct},
+	"pow":    &Builtin{Name: "pow", Fn: Pow},
 }
 
 // BuiltinsIndex ...
