@@ -28,7 +28,7 @@ See: [Reading Guide](./ReadingGuide.md)
 ## Quickstart
 
 ```#!sh
-$ go get github.com/prologic/monkey-lang/cmd/monkey-lang
+$ go get github.com/prologic/monkey-lang
 $ monkey-lang
 ```
 
@@ -37,8 +37,8 @@ $ monkey-lang
 To build run `make`.
 
 ```#!sh
-$ go get github.com/prologic/monkey-lang
-$ cd $GOPATH/github.com/prologic/monkey-lang
+$ git clone https://github.com/prologic/monkey-lang
+$ monkey-lang
 $ make
 This is the Monkey programming language!
 Feel free to type in commands
