@@ -9,6 +9,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/prologic/monkey-lang/builtins"
 	"github.com/prologic/monkey-lang/code"
 	"github.com/prologic/monkey-lang/compiler"
 	"github.com/prologic/monkey-lang/object"
@@ -622,7 +623,7 @@ func (vm *VM) Run() error {
 			builtinIndex := code.ReadUint8(ins[ip+1:])
 			vm.currentFrame().ip += 1
 
-			builtin := object.BuiltinsIndex[builtinIndex]
+			builtin := builtins.BuiltinsIndex[builtinIndex]
 
 			err := vm.push(builtin)
 			if err != nil {

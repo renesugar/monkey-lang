@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/prologic/monkey-lang/ast"
+	"github.com/prologic/monkey-lang/builtins"
 	"github.com/prologic/monkey-lang/object"
 )
 
@@ -527,7 +528,7 @@ func evalIdentifier(
 		return val
 	}
 
-	if builtin, ok := builtins[node.Value]; ok {
+	if builtin, ok := builtins.Builtins[node.Value]; ok {
 		return builtin
 	}
 

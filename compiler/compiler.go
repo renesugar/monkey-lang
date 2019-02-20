@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/prologic/monkey-lang/ast"
+	"github.com/prologic/monkey-lang/builtins"
 	"github.com/prologic/monkey-lang/code"
 	"github.com/prologic/monkey-lang/object"
 )
@@ -46,7 +47,7 @@ func New() *Compiler {
 
 	symbolTable := NewSymbolTable()
 
-	for i, builtin := range object.BuiltinsIndex {
+	for i, builtin := range builtins.BuiltinsIndex {
 		symbolTable.DefineBuiltin(i, builtin.Name)
 	}
 

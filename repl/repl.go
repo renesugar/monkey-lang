@@ -11,6 +11,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/prologic/monkey-lang/builtins"
 	"github.com/prologic/monkey-lang/compiler"
 	"github.com/prologic/monkey-lang/eval"
 	"github.com/prologic/monkey-lang/lexer"
@@ -51,7 +52,7 @@ type VMState struct {
 
 func NewVMState() *VMState {
 	symbolTable := compiler.NewSymbolTable()
-	for i, builtin := range object.BuiltinsIndex {
+	for i, builtin := range builtins.BuiltinsIndex {
 		symbolTable.DefineBuiltin(i, builtin.Name)
 	}
 
