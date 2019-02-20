@@ -22,7 +22,7 @@ var Builtins = map[string]*Builtin{
 	"bool":   &Builtin{Name: "bool", Fn: Bool},
 	"int":    &Builtin{Name: "int", Fn: Int},
 	"str":    &Builtin{Name: "str", Fn: Str},
-	"typeof": &Builtin{Name: "typeof", Fn: TypeOf},
+	"type":   &Builtin{Name: "type", Fn: TypeOf},
 	"args":   &Builtin{Name: "args", Fn: Args},
 	"lower":  &Builtin{Name: "lower", Fn: Lower},
 	"upper":  &Builtin{Name: "upper", Fn: Upper},
