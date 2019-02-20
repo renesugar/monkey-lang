@@ -459,6 +459,10 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.BitwiseXOR)
 		case "&":
 			c.emit(code.BitwiseAND)
+		case "<<":
+			c.emit(code.LeftShift)
+		case ">>":
+			c.emit(code.RightShift)
 		case "||":
 			c.emit(code.Or)
 		case "&&":

@@ -130,6 +130,11 @@ func (l *Lexer) NextToken() token.Token {
 			l.readChar()
 			tok = newToken(token.LTE, l.ch)
 			tok.Literal = "<="
+		} else if l.peekChar() == '<' {
+			ch := l.ch
+			l.readChar()
+			literal := string(ch) + string(l.ch)
+			tok = token.Token{Type: token.LeftShift, Literal: literal}
 		} else {
 			tok = newToken(token.LT, l.ch)
 		}
@@ -138,6 +143,11 @@ func (l *Lexer) NextToken() token.Token {
 			l.readChar()
 			tok = newToken(token.GTE, l.ch)
 			tok.Literal = ">="
+		} else if l.peekChar() == '>' {
+			ch := l.ch
+			l.readChar()
+			literal := string(ch) + string(l.ch)
+			tok = token.Token{Type: token.RightShift, Literal: literal}
 		} else {
 			tok = newToken(token.GT, l.ch)
 		}

@@ -290,7 +290,6 @@ func TestIntegerArithmetic(t *testing.T) {
 				code.Make(code.Pop),
 			},
 		},
-
 		{
 			input:             "5 & 2",
 			expectedConstants: []interface{}{5, 2},
@@ -301,7 +300,26 @@ func TestIntegerArithmetic(t *testing.T) {
 				code.Make(code.Pop),
 			},
 		},
-
+		{
+			input:             "1 << 2",
+			expectedConstants: []interface{}{1, 2},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.LoadConstant, 0),
+				code.Make(code.LoadConstant, 1),
+				code.Make(code.LeftShift),
+				code.Make(code.Pop),
+			},
+		},
+		{
+			input:             "4 >> 2",
+			expectedConstants: []interface{}{4, 2},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.LoadConstant, 0),
+				code.Make(code.LoadConstant, 1),
+				code.Make(code.RightShift),
+				code.Make(code.Pop),
+			},
+		},
 		{
 			input:             "-1",
 			expectedConstants: []interface{}{1},

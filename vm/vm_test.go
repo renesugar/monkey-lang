@@ -217,6 +217,8 @@ func TestIntegerArithmetic(t *testing.T) {
 		{"1 | 2", 3},
 		{"2 ^ 4", 6},
 		{"3 & 6", 2},
+		{"1 << 2", 4},
+		{"4 >> 2", 1},
 	}
 
 	runVmTests(t, tests)

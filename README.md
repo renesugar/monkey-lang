@@ -298,6 +298,7 @@ Operators      | Description
 `+ -`          | Addition, Subtraction
 `< <= > >= in` | Comparison
 `== !=`        | Equality
+`<< >>`        | Bit Shift
 `~`            | Bitwise not
 `&`            | Bitwise and
 <code>&#124;</code>       | Bitwise or
@@ -329,6 +330,8 @@ Operator   | Types           | Action
 `<`        | `str < str`     | true iff left < right (lexicographical)
 `<`        | `array < array` | true iff left < right (lexicographical, recursive)
 `<= > >=`  | same as `<`     | similar to `<`
+`<<`       | `int << int`    | Shift left by n bits
+`>>`       | `int` >> int`   | Shift right by n bits
 `==`       | `any == any`    | deep equality (always false if different type)
 `!=`       | `any != any`    | same as `not ==`
 <code>&#124;</code> | <code>int &#124; int</code> | Bitwise or

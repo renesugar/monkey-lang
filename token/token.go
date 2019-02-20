@@ -42,6 +42,10 @@ const (
 	DIVIDE = "/"
 	// MODULO the modulo operator
 	MODULO = "%"
+	// LeftShift
+	LeftShift = "<<"
+	// RightShift
+	RightShift = ">>"
 
 	//
 	// Bitwise / Logical operators

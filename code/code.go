@@ -103,6 +103,8 @@ const (
 	BitwiseXOR
 	BitwiseAND
 	BitwiseNOT
+	LeftShift
+	RightShift
 	Equal
 	NotEqual
 	GreaterThan
@@ -149,6 +151,8 @@ var definitions = map[Opcode]*Definition{
 	BitwiseXOR:       {"BitwiseXOR", []int{}},
 	BitwiseAND:       {"BitwiseAND", []int{}},
 	BitwiseNOT:       {"BitwiseNOT", []int{}},
+	LeftShift:        {"LeftShift", []int{}},
+	RightShift:       {"RightShift", []int{}},
 	Equal:            {"Equal", []int{}},
 	NotEqual:         {"NotEqual", []int{}},
 	GreaterThan:      {"GreaterThan", []int{}},

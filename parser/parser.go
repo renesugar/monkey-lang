@@ -16,17 +16,18 @@ const (
 	AND
 	NOT
 	IN
-	ASSIGN      // := or =
-	EQUALS      // ==
-	LESSGREATER // > or <
-	BitwiseOR   // |
-	BitwiseXOR  // ^
-	BitwiseAND  // &
-	SUM         // + or -
-	PRODUCT     // * / or %
-	PREFIX      // -X or !X
-	CALL        // myFunction(X)
-	INDEX       // array[index]
+	ASSIGN       // := or =
+	EQUALS       // ==
+	LESSGREATER  // > or <
+	BitwiseOR    // |
+	BitwiseXOR   // ^
+	BitwiseAND   // &
+	BitwiseShift // << or >>
+	SUM          // + or -
+	PRODUCT      // * / or %
+	PREFIX       // -X or !X
+	CALL         // myFunction(X)
+	INDEX        // array[index]
 
 )
 
@@ -45,6 +46,8 @@ var precedences = map[token.Type]int{
 	token.BitwiseOR:  BitwiseOR,
 	token.BitwiseXOR: BitwiseXOR,
 	token.BitwiseAND: BitwiseAND,
+	token.LeftShift:  BitwiseShift,
+	token.RightShift: BitwiseShift,
 	token.PLUS:       SUM,
 	token.MINUS:      SUM,
 	token.DIVIDE:     PRODUCT,
@@ -107,6 +110,9 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.BitwiseOR, p.parseInfixExpression)
 	p.registerInfix(token.BitwiseXOR, p.parseInfixExpression)
 	p.registerInfix(token.BitwiseAND, p.parseInfixExpression)
+
+	p.registerInfix(token.LeftShift, p.parseInfixExpression)
+	p.registerInfix(token.RightShift, p.parseInfixExpression)
 
 	p.registerPrefix(token.NOT, p.parsePrefixExpression)
 	p.registerInfix(token.OR, p.parseInfixExpression)

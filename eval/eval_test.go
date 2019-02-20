@@ -39,6 +39,8 @@ func TestEvalExpressions(t *testing.T) {
 		{"3 & 6", 2},
 		{`" " * 4`, "    "},
 		{`4 * " "`, "    "},
+		{"1 << 2", 4},
+		{"4 >> 2", 1},
 	}
 
 	for _, tt := range tests {

@@ -421,6 +421,10 @@ func evalIntegerInfixExpression(
 		return &object.Integer{Value: leftVal ^ rightVal}
 	case "&":
 		return &object.Integer{Value: leftVal & rightVal}
+	case "<<":
+		return &object.Integer{Value: leftVal << uint64(rightVal)}
+	case ">>":
+		return &object.Integer{Value: leftVal >> uint64(rightVal)}
 	case "<":
 		return fromNativeBoolean(leftVal < rightVal)
 	case "<=":

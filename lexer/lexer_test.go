@@ -36,6 +36,7 @@ if (5 < 10) {
 d.foo
 &|^~
 !&&||
+<<>>
 `
 
 	tests := []struct {
@@ -136,6 +137,8 @@ d.foo
 		{token.NOT, "!"},
 		{token.AND, "&&"},
 		{token.OR, "||"},
+		{token.LeftShift, "<<"},
+		{token.RightShift, ">>"},
 		{token.EOF, ""},
 	}
 
