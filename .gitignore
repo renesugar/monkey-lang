@@ -3,6 +3,8 @@
 *.so
 *.bak
 *.txt
+*.swo
+*.swn
 .DS_Store
 
 /dist
