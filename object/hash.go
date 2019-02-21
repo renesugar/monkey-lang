@@ -51,30 +51,30 @@ type Hash struct {
 	Pairs map[HashKey]HashPair
 }
 
-func (h *Hash) Equal(other Object) bool {
+func (h *Hash) Compare(other Object) int {
 	if obj, ok := other.(*Hash); ok {
 		if len(h.Pairs) != len(obj.Pairs) {
-			return false
+			return -1
 		}
 		for _, pair := range h.Pairs {
 			left := pair.Value
 			hashed := left.(Hashable)
 			right, ok := obj.Pairs[hashed.HashKey()]
 			if !ok {
-				return false
+				return -1
 			}
 			cmp, ok := left.(Comparable)
 			if !ok {
-				return false
+				return -1
 			}
-			if !cmp.Equal(right.Value) {
-				return false
+			if cmp.Compare(right.Value) != 0 {
+				return cmp.Compare(right.Value)
 			}
 		}
 
-		return true
+		return 0
 	}
-	return false
+	return -1
 }
 
 func (h *Hash) String() string {

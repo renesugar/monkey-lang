@@ -148,6 +148,7 @@ func TestEvalBooleanExpression(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		t.Log(tt.input)
 		evaluated := testEval(tt.input)
 		testBooleanObject(t, evaluated, tt.expected)
 	}
@@ -270,11 +271,11 @@ func TestErrorHandling(t *testing.T) {
 	}{
 		{
 			"5 + true;",
-			"type mismatch: int + bool",
+			"unknown operator: int + bool",
 		},
 		{
 			"5 + true; 5;",
-			"type mismatch: int + bool",
+			"unknown operator: int + bool",
 		},
 		{
 			"-true",

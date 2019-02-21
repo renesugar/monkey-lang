@@ -3,13 +3,11 @@ package object
 // Null is the null type and used to represent the absence of a value
 type Null struct{}
 
-func (n *Null) Less(other Object) bool {
-	return false
-}
-
-func (n *Null) Equal(other Object) bool {
-	_, ok := other.(*Null)
-	return ok
+func (n *Null) Compare(other Object) int {
+	if _, ok := other.(*Null); ok {
+		return 0
+	}
+	return 1
 }
 
 func (n *Null) String() string {

@@ -10,18 +10,18 @@ type String struct {
 	Value string
 }
 
-func (s *String) Less(other Object) bool {
+func (s *String) Compare(other Object) int {
 	if obj, ok := other.(*String); ok {
-		return s.Value < obj.Value
+		switch {
+		case s.Value < obj.Value:
+			return -1
+		case s.Value > obj.Value:
+			return 1
+		default:
+			return 0
+		}
 	}
-	return false
-}
-
-func (s *String) Equal(other Object) bool {
-	if obj, ok := other.(*String); ok {
-		return s.Value == obj.Value
-	}
-	return false
+	return 1
 }
 
 func (s *String) String() string {

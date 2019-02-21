@@ -46,8 +46,7 @@ const (
 // values. It is the responsibility of the caller (left) to check for types.
 // Returns `true` iif the types and values are identical, `false` otherwise.
 type Comparable interface {
-	Equal(other Object) bool
-	Less(other Object) bool
+	Compare(other Object) int
 }
 
 // Immutable is the interface for all immutable objects which must implement

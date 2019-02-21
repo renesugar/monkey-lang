@@ -10,18 +10,18 @@ type Integer struct {
 	Value int64
 }
 
-func (i *Integer) Equal(other Object) bool {
+func (i *Integer) Compare(other Object) int {
 	if obj, ok := other.(*Integer); ok {
-		return i.Value == obj.Value
+		switch {
+		case i.Value < obj.Value:
+			return -1
+		case i.Value > obj.Value:
+			return 1
+		default:
+			return 0
+		}
 	}
-	return false
-}
-
-func (i *Integer) Less(other Object) bool {
-	if obj, ok := other.(*Integer); ok {
-		return i.Value < obj.Value
-	}
-	return true
+	return -1
 }
 
 func (i *Integer) String() string {

@@ -335,6 +335,7 @@ func evalInfixExpression(
 			elements = append(elements, leftVal...)
 		}
 		return &object.Array{Elements: elements}
+
 	// 3 * [1]
 	case operator == "*" && left.Type() == object.INTEGER && right.Type() == object.ARRAY:
 		leftVal := int(left.(*object.Integer).Value)
@@ -350,25 +351,33 @@ func evalInfixExpression(
 		leftVal := left.(*object.String).Value
 		rightVal := right.(*object.Integer).Value
 		return &object.String{Value: strings.Repeat(leftVal, int(rightVal))}
+
 	// 4 * " "
 	case operator == "*" && left.Type() == object.INTEGER && right.Type() == object.STRING:
 		leftVal := left.(*object.Integer).Value
 		rightVal := right.(*object.String).Value
 		return &object.String{Value: strings.Repeat(rightVal, int(leftVal))}
 
-	case left.Type() == object.BOOLEAN && right.Type() == object.BOOLEAN:
-		return evalBooleanInfixExpression(operator, left, right)
-	case left.Type() == object.INTEGER && right.Type() == object.INTEGER:
-		return evalIntegerInfixExpression(operator, left, right)
-	case left.Type() == object.STRING && right.Type() == object.STRING:
-		return evalStringInfixExpression(operator, left, right)
 	case operator == "==":
-		return fromNativeBoolean(left == right)
+		return fromNativeBoolean(left.(object.Comparable).Compare(right) == 0)
 	case operator == "!=":
-		return fromNativeBoolean(left != right)
-	case left.Type() != right.Type():
-		return newError("type mismatch: %s %s %s",
-			left.Type(), operator, right.Type())
+		return fromNativeBoolean(left.(object.Comparable).Compare(right) != 0)
+	case operator == "<=":
+		return fromNativeBoolean(left.(object.Comparable).Compare(right) < 1)
+	case operator == ">=":
+		return fromNativeBoolean(left.(object.Comparable).Compare(right) > -1)
+	case operator == "<":
+		return fromNativeBoolean(left.(object.Comparable).Compare(right) == -1)
+	case operator == ">":
+		return fromNativeBoolean(left.(object.Comparable).Compare(right) == 1)
+
+	case left.Type() == right.Type() && left.Type() == object.BOOLEAN:
+		return evalBooleanInfixExpression(operator, left, right)
+	case left.Type() == right.Type() && left.Type() == object.INTEGER:
+		return evalIntegerInfixExpression(operator, left, right)
+	case left.Type() == right.Type() && left.Type() == object.STRING:
+		return evalStringInfixExpression(operator, left, right)
+
 	default:
 		return newError("unknown operator: %s %s %s",
 			left.Type(), operator, right.Type())
@@ -383,10 +392,6 @@ func evalBooleanInfixExpression(
 	rightVal := right.(*object.Boolean).Value
 
 	switch operator {
-	case "==":
-		return fromNativeBoolean(left == right)
-	case "!=":
-		return fromNativeBoolean(left != right)
 	case "&&":
 		return &object.Boolean{Value: leftVal && rightVal}
 	case "||":
@@ -452,14 +457,6 @@ func evalStringInfixExpression(
 	switch operator {
 	case "+":
 		return &object.String{Value: leftVal + rightVal}
-	case "<":
-		return fromNativeBoolean(leftVal < rightVal)
-	case ">":
-		return fromNativeBoolean(leftVal > rightVal)
-	case "==":
-		return fromNativeBoolean(leftVal == rightVal)
-	case "!=":
-		return fromNativeBoolean(leftVal != rightVal)
 	default:
 		return newError("unknown operator: %s %s %s",
 			left.Type(), operator, right.Type())

@@ -34,29 +34,29 @@ func (a *Array) Swap(i, j int) {
 
 func (a *Array) Less(i, j int) bool {
 	if cmp, ok := a.Elements[i].(Comparable); ok {
-		return cmp.Less(a.Elements[j])
+		return cmp.Compare(a.Elements[j]) == -1
 	}
 	return false
 }
 
-func (ao *Array) Equal(other Object) bool {
+func (ao *Array) Compare(other Object) int {
 	if obj, ok := other.(*Array); ok {
 		if len(ao.Elements) != len(obj.Elements) {
-			return false
+			return -1
 		}
 		for i, el := range ao.Elements {
 			cmp, ok := el.(Comparable)
 			if !ok {
-				return false
+				return -1
 			}
-			if !cmp.Equal(obj.Elements[i]) {
-				return false
+			if cmp.Compare(obj.Elements[i]) != 0 {
+				return cmp.Compare(obj.Elements[i])
 			}
 		}
 
-		return true
+		return 0
 	}
-	return false
+	return -1
 }
 
 func (ao *Array) String() string {

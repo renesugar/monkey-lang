@@ -1,6 +1,7 @@
 package builtins
 
 import (
+	"sort"
 	"strings"
 
 	. "github.com/prologic/monkey-lang/object"
@@ -21,15 +22,14 @@ func Find(args ...Object) Object {
 			return newError("expected arg #2 to be `str` got got=%T", args[1])
 		}
 	} else if haystack, ok := args[0].(*Array); ok {
-		needle := args[1]
-		index := -1
-		for i, el := range haystack.Elements {
-			if cmp, ok := el.(Comparable); ok && cmp.Equal(needle) {
-				index = i
-				break
-			}
+		needle := args[1].(Comparable)
+		i := sort.Search(len(haystack.Elements), func(i int) bool {
+			return needle.Compare(haystack.Elements[i]) == 0
+		})
+		if i < len(haystack.Elements) && needle.Compare(haystack.Elements[i]) == 0 {
+			return &Integer{Value: int64(i)}
 		}
-		return &Integer{Value: int64(index)}
+		return &Integer{Value: -1}
 	} else {
 		return newError("expected arg #1 to be `str` or `array` got got=%T", args[0])
 	}

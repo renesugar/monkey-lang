@@ -10,25 +10,18 @@ type Boolean struct {
 	Value bool
 }
 
-func (b *Boolean) Int() int64 {
+func (b *Boolean) Int() int {
 	if b.Value {
 		return 1
 	}
 	return 0
 }
 
-func (b *Boolean) Less(other Object) bool {
+func (b *Boolean) Compare(other Object) int {
 	if obj, ok := other.(*Boolean); ok {
-		return b.Int() < obj.Int()
+		return b.Int() - obj.Int()
 	}
-	return false
-}
-
-func (b *Boolean) Equal(other Object) bool {
-	if obj, ok := other.(*Boolean); ok {
-		return b.Value == obj.Value
-	}
-	return false
+	return 1
 }
 
 func (b *Boolean) String() string {
