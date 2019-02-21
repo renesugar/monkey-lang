@@ -80,6 +80,9 @@ func main() {
 			log.Fatal("no source file given to compile")
 		}
 		f, err := os.Open(args[0])
+		if err != nil {
+			log.Fatal(err)
+		}
 		defer f.Close()
 
 		b, err := ioutil.ReadAll(f)
