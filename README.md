@@ -423,13 +423,9 @@ Operator   | Types           | Action
   Returns the minimum value of elements in `array`.
 - `max(array)`
   Returns the maximum value of elements in `array`.
-
-Coming soon... 
-
-- `sorted(array[, key])`
+- `sorted(array)`
   Sorts the `array` using a stable sort, and returns  a new `array`..
   Elements in the `array` must be orderable with `<` (`int`, `str`, or `array` of those).
-  If a `key` function is provided, it must take the element as an argument and return an orderable value to use as the sort key.
 - `reversed(array)`
   Reverses the array `array` and returns a new `array`.
 

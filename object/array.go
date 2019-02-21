@@ -10,6 +10,35 @@ type Array struct {
 	Elements []Object
 }
 
+func (a *Array) Copy() *Array {
+	elements := make([]Object, len(a.Elements))
+	for i, e := range a.Elements {
+		elements[i] = e
+	}
+	return &Array{Elements: elements}
+}
+
+func (a *Array) Reverse() {
+	for i, j := 0, len(a.Elements)-1; i < j; i, j = i+1, j-1 {
+		a.Elements[i], a.Elements[j] = a.Elements[j], a.Elements[i]
+	}
+}
+
+func (a *Array) Len() int {
+	return len(a.Elements)
+}
+
+func (a *Array) Swap(i, j int) {
+	a.Elements[i], a.Elements[j] = a.Elements[j], a.Elements[i]
+}
+
+func (a *Array) Less(i, j int) bool {
+	if cmp, ok := a.Elements[i].(Comparable); ok {
+		return cmp.Less(a.Elements[j])
+	}
+	return false
+}
+
 func (ao *Array) Equal(other Object) bool {
 	if obj, ok := other.(*Array); ok {
 		if len(ao.Elements) != len(obj.Elements) {

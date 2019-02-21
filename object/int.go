@@ -17,6 +17,13 @@ func (i *Integer) Equal(other Object) bool {
 	return false
 }
 
+func (i *Integer) Less(other Object) bool {
+	if obj, ok := other.(*Integer); ok {
+		return i.Value < obj.Value
+	}
+	return true
+}
+
 func (i *Integer) String() string {
 	return i.Inspect()
 }

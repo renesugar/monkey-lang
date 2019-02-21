@@ -10,6 +10,13 @@ type String struct {
 	Value string
 }
 
+func (s *String) Less(other Object) bool {
+	if obj, ok := other.(*String); ok {
+		return s.Value < obj.Value
+	}
+	return false
+}
+
 func (s *String) Equal(other Object) bool {
 	if obj, ok := other.(*String); ok {
 		return s.Value == obj.Value
