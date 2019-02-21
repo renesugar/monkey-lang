@@ -1021,7 +1021,7 @@ func TestBuiltins(t *testing.T) {
 				code.Make(code.MakeArray, 0),
 				code.Make(code.Call, 1),
 				code.Make(code.Pop),
-				code.Make(code.LoadBuiltin, 25),
+				code.Make(code.LoadBuiltin, 27),
 				code.Make(code.MakeArray, 0),
 				code.Make(code.LoadConstant, 0),
 				code.Make(code.Call, 2),
