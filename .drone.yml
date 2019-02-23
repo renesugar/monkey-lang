@@ -5,7 +5,7 @@ steps:
   - name: build
     image: golang:latest
     commands:
-      - make test
+      - go test -v -short -cover -coverprofile=coverage.txt ./...
 
   - name: coverage
     image: plugins/codecov
