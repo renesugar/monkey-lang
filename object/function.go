@@ -15,6 +15,10 @@ type Function struct {
 	Env        *Environment
 }
 
+func (f *Function) Bool() bool {
+	return false
+}
+
 func (f *Function) String() string {
 	return f.Inspect()
 }
@@ -47,6 +51,10 @@ func (f *Function) Inspect() string {
 // or body of a function.
 type Return struct {
 	Value Object
+}
+
+func (rv *Return) Bool() bool {
+	return true
 }
 
 func (rv *Return) String() string {

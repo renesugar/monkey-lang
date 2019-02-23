@@ -1,30 +1,22 @@
 package builtins
 
 import (
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Push ...
-func Push(args ...Object) Object {
-	if len(args) != 2 {
-		return newError("wrong number of arguments. got=%d, want=2",
-			len(args))
-	}
-	if args[0].Type() != ARRAY {
-		return newError("argument to `push` must be array, got %s",
-			args[0].Type())
-	}
-
-	arr := args[0].(*Array)
-	length := len(arr.Elements)
-
-	newElements := make([]Object, length+1, length+1)
-	copy(newElements, arr.Elements)
-	if immutable, ok := args[1].(Immutable); ok {
-		newElements[length] = immutable.Clone()
-	} else {
-		newElements[length] = args[1]
+func Push(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"push", args,
+		typing.ExactArgs(2),
+		typing.WithTypes(object.ARRAY),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	return &Array{Elements: newElements}
+	arr := args[0].(*object.Array)
+	newArray := arr.Copy()
+	newArray.Append(args[1])
+	return newArray
 }

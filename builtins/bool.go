@@ -1,44 +1,18 @@
 package builtins
 
 import (
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Bool ...
-func Bool(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func Bool(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"bool", args,
+		typing.ExactArgs(1),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	switch arg := args[0].(type) {
-	case *Null:
-		return &Boolean{Value: false}
-	case *Boolean:
-		return arg
-	case *Integer:
-		if arg.Value == 0 {
-			return &Boolean{Value: false}
-		}
-		return &Boolean{Value: true}
-	case *String:
-		if len(arg.Value) > 0 {
-			return &Boolean{Value: true}
-		}
-		return &Boolean{Value: false}
-	case *Array:
-		if len(arg.Elements) > 0 {
-			return &Boolean{Value: true}
-		}
-		return &Boolean{Value: false}
-	case *Hash:
-		if len(arg.Pairs) > 0 {
-			return &Boolean{Value: true}
-		}
-		return &Boolean{Value: false}
-
-	default:
-		return newError("argument to `bool` not supported, got %s",
-			args[0].Type())
-	}
+	return &object.Boolean{Value: args[0].Bool()}
 }

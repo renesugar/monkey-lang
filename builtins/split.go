@@ -3,36 +3,31 @@ package builtins
 import (
 	"strings"
 
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Split ...
-func Split(args ...Object) Object {
-	if len(args) < 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func Split(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"split", args,
+		typing.RangeOfArgs(1, 2),
+		typing.WithTypes(object.STRING, object.STRING),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	if obj, ok := args[0].(*String); ok {
-		var sep string
+	var sep string
+	s := args[0].(*object.String).Value
 
-		s := obj.Value
-
-		if len(args) == 2 {
-			if obj, ok := args[1].(*String); ok {
-				sep = obj.Value
-			} else {
-				return newError("expected arg #2 to be `str` got=%T", args[1])
-			}
-		}
-
-		tokens := strings.Split(s, sep)
-		elements := make([]Object, len(tokens))
-		for i, token := range tokens {
-			elements[i] = &String{Value: token}
-		}
-		return &Array{Elements: elements}
-	} else {
-		return newError("expected arg #1 to be `str` got got=%T", args[0])
+	if len(args) == 2 {
+		sep = args[1].(*object.String).Value
 	}
+
+	tokens := strings.Split(s, sep)
+	elements := make([]object.Object, len(tokens))
+	for i, token := range tokens {
+		elements[i] = &object.String{Value: token}
+	}
+	return &object.Array{Elements: elements}
 }

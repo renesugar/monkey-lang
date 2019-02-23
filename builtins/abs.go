@@ -1,22 +1,24 @@
 package builtins
 
 import (
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Abs ...
-func Abs(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func Abs(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"abs", args,
+		typing.ExactArgs(1),
+		typing.WithTypes(object.INTEGER),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	if i, ok := args[0].(*Integer); ok {
-		value := i.Value
-		if value < 0 {
-			value = value * -1
-		}
-		return &Integer{Value: value}
+	i := args[0].(*object.Integer)
+	value := i.Value
+	if value < 0 {
+		value = value * -1
 	}
-	return newError("argument to `abs` not supported, got %s", args[0].Type())
+	return &object.Integer{Value: value}
 }

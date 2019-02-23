@@ -3,32 +3,34 @@ package builtins
 import (
 	"strconv"
 
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Int ...
-func Int(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func Int(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"int", args,
+		typing.ExactArgs(1),
+	); err != nil {
+		return newError(err.Error())
 	}
 
 	switch arg := args[0].(type) {
-	case *Boolean:
+	case *object.Boolean:
 		if arg.Value {
-			return &Integer{Value: 1}
+			return &object.Integer{Value: 1}
 		}
-		return &Integer{Value: 0}
-	case *Integer:
+		return &object.Integer{Value: 0}
+	case *object.Integer:
 		return arg
-	case *String:
+	case *object.String:
 		n, err := strconv.ParseInt(arg.Value, 10, 64)
 		if err != nil {
 			return newError("could not parse string to int: %s", err)
 		}
-		return &Integer{Value: n}
+		return &object.Integer{Value: n}
 	default:
-		return newError("argument to `int` not supported, got %s",
-			args[0].Type())
+		return &object.Integer{}
 	}
 }

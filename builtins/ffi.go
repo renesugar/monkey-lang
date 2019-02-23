@@ -4,27 +4,22 @@ import (
 	"fmt"
 	"plugin"
 
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // FFI ...
-func FFI(args ...Object) Object {
-	if len(args) != 2 {
-		return newError("wrong number of arguments. got=%d, want=2",
-			len(args))
+func FFI(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"ffi", args,
+		typing.ExactArgs(2),
+		typing.WithTypes(object.STRING, object.STRING),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	arg, ok := args[0].(*String)
-	if !ok {
-		return newError("argument #1 to `ffi` expected to be `str` got=%T", args[0].Type())
-	}
-	name := arg.Value
-
-	arg, ok = args[1].(*String)
-	if !ok {
-		return newError("argument #2 to `ffi` expected to be `str` got=%T", args[0].Type())
-	}
-	symbol := arg.Value
+	name := args[0].(*object.String).Value
+	symbol := args[1].(*object.String).Value
 
 	p, err := plugin.Open(fmt.Sprintf("%s.so", name))
 	if err != nil {
@@ -36,5 +31,5 @@ func FFI(args ...Object) Object {
 		return newError("error finding symbol: %s", err)
 	}
 
-	return &Builtin{Name: symbol, Fn: v.(func(...Object) Object)}
+	return &object.Builtin{Name: symbol, Fn: v.(object.BuiltinFunction)}
 }

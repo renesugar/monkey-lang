@@ -740,12 +740,12 @@ func TestBuiltinFunctions(t *testing.T) {
 		{
 			`len(1)`,
 			&object.Error{
-				Message: "argument to `len` not supported, got int",
+				Message: "TypeError: object of type 'int' has no len()",
 			},
 		},
 		{`len("one", "two")`,
 			&object.Error{
-				Message: "wrong number of arguments. got=2, want=1",
+				Message: "TypeError: len() takes exactly 1 argument (2 given)",
 			},
 		},
 		{`len([1, 2, 3])`, 3},
@@ -755,27 +755,27 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`first([])`, Null},
 		{`first(1)`,
 			&object.Error{
-				Message: "argument to `first` must be array, got int",
+				Message: "TypeError: first() expected argument #1 to be `array` got `int`",
 			},
 		},
 		{`last([1, 2, 3])`, 3},
 		{`last([])`, Null},
 		{`last(1)`,
 			&object.Error{
-				Message: "argument to `last` must be array, got int",
+				Message: "TypeError: last() expected argument #1 to be `array` got `int`",
 			},
 		},
 		{`rest([1, 2, 3])`, []int{2, 3}},
-		{`rest([])`, Null},
+		{`rest([])`, []int{}},
 		{`push([], 1)`, []int{1}},
 		{`push(1, 1)`,
 			&object.Error{
-				Message: "argument to `push` must be array, got int",
+				Message: "TypeError: push() expected argument #1 to be `array` got `int`",
 			},
 		},
 		{`input()`, ""},
 		{`pop([])`, &object.Error{
-			Message: "cannot pop from an empty array",
+			Message: "IndexError: pop from an empty array",
 		},
 		},
 		{`pop([1])`, 1},

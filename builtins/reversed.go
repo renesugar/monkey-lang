@@ -1,20 +1,22 @@
 package builtins
 
 import (
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Reversed ...
-func Reversed(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func Reversed(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"reversed", args,
+		typing.ExactArgs(1),
+		typing.WithTypes(object.ARRAY),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	if a, ok := args[0].(*Array); ok {
-		newArray := a.Copy()
-		newArray.Reverse()
-		return newArray
-	}
-	return newError("argument #1 to `reversed` expected to be `array` got=%T", args[0].Type())
+	arr := args[0].(*object.Array)
+	newArray := arr.Copy()
+	newArray.Reverse()
+	return newArray
 }

@@ -4,6 +4,10 @@ package object
 // used to both represent values as the evaluator encounters and constructs
 // them as well as how the user interacts with values.
 
+import (
+	"fmt"
+)
+
 const (
 	// INTEGER is the Integer object type
 	INTEGER = "int"
@@ -49,6 +53,13 @@ type Comparable interface {
 	Compare(other Object) int
 }
 
+// Sizeable is the interface for returning the size of an Object.
+// Object(s) that have a valid size must implement  this interface and the
+// Len() method.
+type Sizeable interface {
+	Len() int
+}
+
 // Immutable is the interface for all immutable objects which must implement
 // the Clone() method used by binding names to values.
 type Immutable interface {
@@ -70,7 +81,8 @@ type Type string
 // Object represents a value and implementations are expected to implement
 // `Type()` and `Inspect()` functions
 type Object interface {
+	fmt.Stringer
 	Type() Type
-	String() string
+	Bool() bool
 	Inspect() string
 }

@@ -1,23 +1,18 @@
 package builtins
 
 import (
-	"fmt"
-
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Str ...
-func Str(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func Str(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"str", args,
+		typing.ExactArgs(1),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	arg, ok := args[0].(fmt.Stringer)
-	if !ok {
-		return newError("argument to `str` not supported, got %s",
-			args[0].Type())
-	}
-
-	return &String{Value: arg.String()}
+	return &object.String{Value: args[0].String()}
 }

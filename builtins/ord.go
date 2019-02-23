@@ -1,21 +1,26 @@
 package builtins
 
 import (
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Ord ...
-func Ord(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func Ord(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"ord", args,
+		typing.ExactArgs(1),
+		typing.WithTypes(object.STRING),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	if s, ok := args[0].(*String); ok {
-		if len(s.Value) == 1 {
-			return &Integer{Value: int64(s.Value[0])}
-		}
-		return newError("`ord()` expected a character but got string of length %d", len(s.Value))
+	s := args[0].(*object.String)
+	if len(s.Value) == 1 {
+		return &object.Integer{Value: int64(s.Value[0])}
 	}
-	return newError("argument to `ord` not supported, got %s", args[0].Type())
+	return newError(
+		"TypeError: ord() expected a single character `str` got=%s",
+		s.Inspect(),
+	)
 }

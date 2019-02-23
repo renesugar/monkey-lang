@@ -1,7 +1,8 @@
 package builtins
 
 import (
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 func pow(x, y int64) int64 {
@@ -17,20 +18,17 @@ func pow(x, y int64) int64 {
 }
 
 // Pow ...
-func Pow(args ...Object) Object {
-	if len(args) != 2 {
-		return newError("wrong number of arguments. got=%d, want=2",
-			len(args))
+func Pow(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"pow", args,
+		typing.ExactArgs(2),
+		typing.WithTypes(object.INTEGER, object.INTEGER),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	if x, ok := args[0].(*Integer); ok {
-		if y, ok := args[1].(*Integer); ok {
-			value := pow(x.Value, y.Value)
-			return &Integer{Value: value}
-		} else {
-			return newError("expected argument #2 to `divmod` to be `int` got=%s", args[1].Type())
-		}
-	} else {
-		return newError("expected argument #1 to `divmod` to be `int` got=%s", args[0].Type())
-	}
+	x := args[0].(*object.Integer)
+	y := args[1].(*object.Integer)
+	value := pow(x.Value, y.Value)
+	return &object.Integer{Value: value}
 }

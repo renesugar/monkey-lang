@@ -51,6 +51,14 @@ type Hash struct {
 	Pairs map[HashKey]HashPair
 }
 
+func (h *Hash) Len() int {
+	return len(h.Pairs)
+}
+
+func (h *Hash) Bool() bool {
+	return len(h.Pairs) > 0
+}
+
 func (h *Hash) Compare(other Object) int {
 	if obj, ok := other.(*Hash); ok {
 		if len(h.Pairs) != len(obj.Pairs) {

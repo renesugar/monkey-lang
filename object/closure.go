@@ -14,6 +14,10 @@ type CompiledFunction struct {
 	NumParameters int
 }
 
+func (cf *CompiledFunction) Bool() bool {
+	return true
+}
+
 func (cf *CompiledFunction) String() string {
 	return cf.Inspect()
 }
@@ -31,6 +35,10 @@ func (cf *CompiledFunction) Inspect() string {
 type Closure struct {
 	Fn   *CompiledFunction
 	Free []Object
+}
+
+func (c *Closure) Bool() bool {
+	return true
 }
 
 func (c *Closure) String() string {

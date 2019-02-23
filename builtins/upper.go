@@ -3,18 +3,19 @@ package builtins
 import (
 	"strings"
 
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Upper ...
-func Upper(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func Upper(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"upper", args,
+		typing.ExactArgs(1),
+		typing.WithTypes(object.STRING),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	if str, ok := args[0].(*String); ok {
-		return &String{Value: strings.ToUpper(str.Value)}
-	}
-	return newError("expected `str` argument to `upper` got=%T", args[0])
+	return &object.String{Value: strings.ToUpper(args[0].(*object.String).Value)}
 }

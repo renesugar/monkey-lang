@@ -2,12 +2,21 @@ package object
 
 import (
 	"fmt"
+	"unicode/utf8"
 )
 
 // String is the string type used to represent string literals and holds
 // an internal string value
 type String struct {
 	Value string
+}
+
+func (s *String) Len() int {
+	return utf8.RuneCountInString(s.Value)
+}
+
+func (s *String) Bool() bool {
+	return s.Value != ""
 }
 
 func (s *String) Compare(other Object) int {

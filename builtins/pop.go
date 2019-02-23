@@ -1,25 +1,25 @@
 package builtins
 
 import (
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Pop ...
-func Pop(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
-	}
-	if args[0].Type() != ARRAY {
-		return newError("argument to `pop` must be array, got %s",
-			args[0].Type())
+func Pop(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"pop", args,
+		typing.ExactArgs(1),
+		typing.WithTypes(object.ARRAY),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	arr := args[0].(*Array)
+	arr := args[0].(*object.Array)
 	length := len(arr.Elements)
 
 	if length == 0 {
-		return newError("cannot pop from an empty array")
+		return newError("IndexError: pop from an empty array")
 	}
 
 	element := arr.Elements[length-1]

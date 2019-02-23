@@ -10,6 +10,10 @@ type Boolean struct {
 	Value bool
 }
 
+func (b *Boolean) Bool() bool {
+	return b.Value
+}
+
 func (b *Boolean) Int() int {
 	if b.Value {
 		return 1

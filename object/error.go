@@ -7,6 +7,10 @@ type Error struct {
 	Message string
 }
 
+func (e *Error) Bool() bool {
+	return false
+}
+
 func (e *Error) String() string {
 	return e.Message
 }

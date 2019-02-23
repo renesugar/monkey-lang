@@ -10,6 +10,36 @@ type Array struct {
 	Elements []Object
 }
 
+func (a *Array) Bool() bool {
+	return len(a.Elements) > 0
+}
+
+func (a *Array) PopLeft() Object {
+	if len(a.Elements) > 0 {
+		e := a.Elements[0]
+		a.Elements = a.Elements[1:]
+		return e
+	}
+	return &Null{}
+}
+
+func (a *Array) PopRight() Object {
+	if len(a.Elements) > 0 {
+		e := a.Elements[(len(a.Elements) - 1)]
+		a.Elements = a.Elements[:(len(a.Elements) - 1)]
+		return e
+	}
+	return &Null{}
+}
+
+func (a *Array) Prepend(obj Object) {
+	a.Elements = append([]Object{obj}, a.Elements...)
+}
+
+func (a *Array) Append(obj Object) {
+	a.Elements = append(a.Elements, obj)
+}
+
 func (a *Array) Copy() *Array {
 	elements := make([]Object, len(a.Elements))
 	for i, e := range a.Elements {

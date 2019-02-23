@@ -10,6 +10,10 @@ type Integer struct {
 	Value int64
 }
 
+func (i *Integer) Bool() bool {
+	return i.Value != 0
+}
+
 func (i *Integer) Compare(other Object) int {
 	if obj, ok := other.(*Integer); ok {
 		switch {

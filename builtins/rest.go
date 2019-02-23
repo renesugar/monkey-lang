@@ -1,27 +1,22 @@
 package builtins
 
 import (
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Rest ...
-func Rest(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
-	}
-	if args[0].Type() != ARRAY {
-		return newError("argument to `rest` must be array, got %s",
-			args[0].Type())
-	}
-
-	arr := args[0].(*Array)
-	length := len(arr.Elements)
-	if length > 0 {
-		newElements := make([]Object, length-1, length-1)
-		copy(newElements, arr.Elements[1:length])
-		return &Array{Elements: newElements}
+func Rest(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"rest", args,
+		typing.ExactArgs(1),
+		typing.WithTypes(object.ARRAY),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	return nil
+	arr := args[0].(*object.Array)
+	newArray := arr.Copy()
+	newArray.PopLeft()
+	return newArray
 }

@@ -12,6 +12,10 @@ type Builtin struct {
 	Fn   BuiltinFunction
 }
 
+func (b *Builtin) Bool() bool {
+	return true
+}
+
 func (b *Builtin) String() string {
 	return b.Inspect()
 }

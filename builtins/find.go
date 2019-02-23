@@ -4,33 +4,47 @@ import (
 	"sort"
 	"strings"
 
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Find ...
-func Find(args ...Object) Object {
-	if len(args) != 2 {
-		return newError("wrong number of arguments. got=%d, want=2",
-			len(args))
+func Find(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"find", args,
+		typing.ExactArgs(2),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	if haystack, ok := args[0].(*String); ok {
-		if needle, ok := args[1].(*String); ok {
-			index := strings.Index(haystack.Value, needle.Value)
-			return &Integer{Value: int64(index)}
-		} else {
-			return newError("expected arg #2 to be `str` got got=%T", args[1])
+	// find("foobar", "bo")
+	if haystack, ok := args[0].(*object.String); ok {
+		if err := typing.Check(
+			"find", args,
+			typing.WithTypes(object.STRING, object.STRING),
+		); err != nil {
+			return newError(err.Error())
 		}
-	} else if haystack, ok := args[0].(*Array); ok {
-		needle := args[1].(Comparable)
+
+		needle := args[1].(*object.String)
+		index := strings.Index(haystack.Value, needle.Value)
+		return &object.Integer{Value: int64(index)}
+	}
+
+	// find([1, 2, 3], 2)
+	if haystack, ok := args[0].(*object.Array); ok {
+		needle := args[1].(object.Comparable)
 		i := sort.Search(len(haystack.Elements), func(i int) bool {
 			return needle.Compare(haystack.Elements[i]) == 0
 		})
 		if i < len(haystack.Elements) && needle.Compare(haystack.Elements[i]) == 0 {
-			return &Integer{Value: int64(i)}
+			return &object.Integer{Value: int64(i)}
 		}
-		return &Integer{Value: -1}
-	} else {
-		return newError("expected arg #1 to be `str` or `array` got got=%T", args[0])
+		return &object.Integer{Value: -1}
 	}
+
+	return newError(
+		"TypeError: find() expected argument #1 to be `array` or `str` got `%s`",
+		args[0].Type(),
+	)
 }

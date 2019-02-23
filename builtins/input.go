@@ -6,20 +6,23 @@ import (
 	"io"
 	"os"
 
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Input ...
-func Input(args ...Object) Object {
-	if len(args) > 0 {
-		obj, ok := args[0].(*String)
-		if !ok {
-			return newError(
-				"argument to `input` not supported, got %s",
-				args[0].Type(),
-			)
-		}
-		fmt.Fprintf(os.Stdout, obj.Value)
+func Input(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"input", args,
+		typing.RangeOfArgs(0, 1),
+		typing.WithTypes(object.STRING),
+	); err != nil {
+		return newError(err.Error())
+	}
+
+	if len(args) == 1 {
+		prompt := args[0].(*object.String).Value
+		fmt.Fprintf(os.Stdout, prompt)
 	}
 
 	buffer := bufio.NewReader(os.Stdin)
@@ -28,5 +31,5 @@ func Input(args ...Object) Object {
 	if err != nil && err != io.EOF {
 		return newError(fmt.Sprintf("error reading input from stdin: %s", err))
 	}
-	return &String{Value: string(line)}
+	return &object.String{Value: string(line)}
 }

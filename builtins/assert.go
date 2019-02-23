@@ -4,26 +4,22 @@ import (
 	"fmt"
 	"os"
 
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Assert ...
-func Assert(args ...Object) Object {
-	if len(args) != 2 {
-		return newError("wrong number of arguments. got=%d, want=2",
-			len(args))
-	}
-	if args[0].Type() != BOOLEAN {
-		return newError("argument #1 to `assert` must be BOOLEAN, got %s",
-			args[0].Type())
-	}
-	if args[1].Type() != STRING {
-		return newError("argument #2 to `assert` must be STRING, got %s",
-			args[0].Type())
+func Assert(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"assert", args,
+		typing.ExactArgs(2),
+		typing.WithTypes(object.BOOLEAN, object.STRING),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	if !args[0].(*Boolean).Value {
-		fmt.Printf("Assertion Error: %s", args[1].(*String).Value)
+	if !args[0].(*object.Boolean).Value {
+		fmt.Printf("Assertion Error: %s", args[1].(*object.String).Value)
 		os.Exit(1)
 	}
 

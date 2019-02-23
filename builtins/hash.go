@@ -1,18 +1,22 @@
 package builtins
 
 import (
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // HashOf ...
-func HashOf(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func HashOf(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"hash", args,
+		typing.ExactArgs(1),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	if hash, ok := args[0].(Hashable); ok {
-		return &Integer{Value: int64(hash.HashKey().Value)}
+	if hash, ok := args[0].(object.Hashable); ok {
+		return &object.Integer{Value: int64(hash.HashKey().Value)}
 	}
-	return newError("argument #1 to `hash()` is not hashable: %s", args[0].Inspect())
+
+	return newError("TypeError: hash() expected argument #1 to be hashable")
 }

@@ -3,37 +3,40 @@ package builtins
 import (
 	"fmt"
 
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // IdOf ...
-func IdOf(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func IdOf(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"id", args,
+		typing.ExactArgs(1),
+	); err != nil {
+		return newError(err.Error())
 	}
 
 	arg := args[0]
 
-	if n, ok := arg.(*Null); ok {
-		return &String{Value: fmt.Sprintf("%p", n)}
-	} else if b, ok := arg.(*Boolean); ok {
-		return &String{Value: fmt.Sprintf("%p", b)}
-	} else if i, ok := arg.(*Integer); ok {
-		return &String{Value: fmt.Sprintf("%p", i)}
-	} else if s, ok := arg.(*String); ok {
-		return &String{Value: fmt.Sprintf("%p", s)}
-	} else if a, ok := arg.(*Array); ok {
-		return &String{Value: fmt.Sprintf("%p", a)}
-	} else if h, ok := arg.(*Hash); ok {
-		return &String{Value: fmt.Sprintf("%p", h)}
-	} else if f, ok := arg.(*Function); ok {
-		return &String{Value: fmt.Sprintf("%p", f)}
-	} else if c, ok := arg.(*Closure); ok {
-		return &String{Value: fmt.Sprintf("%p", c)}
-	} else if b, ok := arg.(*Builtin); ok {
-		return &String{Value: fmt.Sprintf("%p", b)}
-	} else {
-		return newError("argument 31 to `id()` unsupported got=%T", arg.Type())
+	if n, ok := arg.(*object.Null); ok {
+		return &object.String{Value: fmt.Sprintf("%p", n)}
+	} else if b, ok := arg.(*object.Boolean); ok {
+		return &object.String{Value: fmt.Sprintf("%p", b)}
+	} else if i, ok := arg.(*object.Integer); ok {
+		return &object.String{Value: fmt.Sprintf("%p", i)}
+	} else if s, ok := arg.(*object.String); ok {
+		return &object.String{Value: fmt.Sprintf("%p", s)}
+	} else if a, ok := arg.(*object.Array); ok {
+		return &object.String{Value: fmt.Sprintf("%p", a)}
+	} else if h, ok := arg.(*object.Hash); ok {
+		return &object.String{Value: fmt.Sprintf("%p", h)}
+	} else if f, ok := arg.(*object.Function); ok {
+		return &object.String{Value: fmt.Sprintf("%p", f)}
+	} else if c, ok := arg.(*object.Closure); ok {
+		return &object.String{Value: fmt.Sprintf("%p", c)}
+	} else if b, ok := arg.(*object.Builtin); ok {
+		return &object.String{Value: fmt.Sprintf("%p", b)}
 	}
+
+	return nil
 }

@@ -3,18 +3,20 @@ package builtins
 import (
 	"fmt"
 
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Chr ...
-func Chr(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func Chr(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"chr", args,
+		typing.ExactArgs(1),
+		typing.WithTypes(object.INTEGER),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	if i, ok := args[0].(*Integer); ok {
-		return &String{Value: fmt.Sprintf("%c", rune(i.Value))}
-	}
-	return newError("argument to `chr` not supported, got %s", args[0].Type())
+	i := args[0].(*object.Integer)
+	return &object.String{Value: fmt.Sprintf("%c", rune(i.Value))}
 }

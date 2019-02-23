@@ -1,25 +1,21 @@
 package builtins
 
 import (
-	"unicode/utf8"
-
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Len ...
-func Len(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func Len(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"len", args,
+		typing.ExactArgs(1),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	switch arg := args[0].(type) {
-	case *Array:
-		return &Integer{Value: int64(len(arg.Elements))}
-	case *String:
-		return &Integer{Value: int64(utf8.RuneCountInString(arg.Value))}
-	default:
-		return newError("argument to `len` not supported, got %s",
-			args[0].Type())
+	if size, ok := args[0].(object.Sizeable); ok {
+		return &object.Integer{Value: int64(size.Len())}
 	}
+	return newError("TypeError: object of type '%s' has no len()", args[0].Type())
 }

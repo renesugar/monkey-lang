@@ -1,15 +1,18 @@
 package builtins
 
 import (
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // TypeOf ...
-func TypeOf(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func TypeOf(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"type", args,
+		typing.ExactArgs(1),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	return &String{Value: string(args[0].Type())}
+	return &object.String{Value: string(args[0].Type())}
 }

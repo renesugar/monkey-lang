@@ -3,20 +3,22 @@ package builtins
 import (
 	"sort"
 
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Sorted ...
-func Sorted(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func Sorted(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"sort", args,
+		typing.ExactArgs(1),
+		typing.WithTypes(object.ARRAY),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	if a, ok := args[0].(*Array); ok {
-		newArray := a.Copy()
-		sort.Sort(newArray)
-		return newArray
-	}
-	return newError("argument #1 to `sorted` expected to be `array` got=%T", args[0].Type())
+	arr := args[0].(*object.Array)
+	newArray := arr.Copy()
+	sort.Sort(newArray)
+	return newArray
 }

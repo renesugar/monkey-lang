@@ -1,21 +1,21 @@
 package builtins
 
 import (
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Last ...
-func Last(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
-	}
-	if args[0].Type() != ARRAY {
-		return newError("argument to `last` must be array, got %s",
-			args[0].Type())
+func Last(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"last", args,
+		typing.ExactArgs(1),
+		typing.WithTypes(object.ARRAY),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	arr := args[0].(*Array)
+	arr := args[0].(*object.Array)
 	length := len(arr.Elements)
 	if length > 0 {
 		return arr.Elements[length-1]

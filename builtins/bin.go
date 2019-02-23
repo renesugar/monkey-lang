@@ -4,18 +4,20 @@ import (
 	"fmt"
 	"strconv"
 
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Bin ...
-func Bin(args ...Object) Object {
-	if len(args) != 1 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func Bin(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"bin", args,
+		typing.ExactArgs(1),
+		typing.WithTypes(object.INTEGER),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	if i, ok := args[0].(*Integer); ok {
-		return &String{Value: fmt.Sprintf("0b%s", strconv.FormatInt(i.Value, 2))}
-	}
-	return newError("argument to `bin` not supported, got %s", args[0].Type())
+	i := args[0].(*object.Integer)
+	return &object.String{Value: fmt.Sprintf("0b%s", strconv.FormatInt(i.Value, 2))}
 }

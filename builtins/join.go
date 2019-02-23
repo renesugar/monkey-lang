@@ -3,27 +3,25 @@ package builtins
 import (
 	"strings"
 
-	. "github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/typing"
 )
 
 // Join ...
-func Join(args ...Object) Object {
-	if len(args) != 2 {
-		return newError("wrong number of arguments. got=%d, want=1",
-			len(args))
+func Join(args ...object.Object) object.Object {
+	if err := typing.Check(
+		"join", args,
+		typing.ExactArgs(2),
+		typing.WithTypes(object.ARRAY, object.STRING),
+	); err != nil {
+		return newError(err.Error())
 	}
 
-	if arr, ok := args[0].(*Array); ok {
-		if sep, ok := args[1].(*String); ok {
-			a := make([]string, len(arr.Elements))
-			for i, el := range arr.Elements {
-				a[i] = el.String()
-			}
-			return &String{Value: strings.Join(a, sep.Value)}
-		} else {
-			return newError("expected arg #2 to be `str` got got=%T", args[1])
-		}
-	} else {
-		return newError("expected arg #1 to be `array` got got=%T", args[0])
+	arr := args[0].(*object.Array)
+	sep := args[1].(*object.String)
+	a := make([]string, len(arr.Elements))
+	for i, el := range arr.Elements {
+		a[i] = el.String()
 	}
+	return &object.String{Value: strings.Join(a, sep.Value)}
 }
