@@ -13,6 +13,18 @@ type Environment struct {
 	parent *Environment
 }
 
+// Hash returns a new Hash with the names and values of every value in the
+// environment. This is used by the module import system to wrap up the
+// evaulated module into an object.
+func (e *Environment) Hash() *Hash {
+	pairs := make(map[HashKey]HashPair)
+	for k, v := range e.store {
+		s := &String{Value: k}
+		pairs[s.HashKey()] = HashPair{Key: s, Value: v}
+	}
+	return &Hash{Pairs: pairs}
+}
+
 // Clone returns a new Environment with the parent set to the current
 // environment (enclosing environment)
 func (e *Environment) Clone() *Environment {

@@ -44,6 +44,9 @@ const (
 
 	// HASH is the Hash object type
 	HASH = "hash"
+
+	// MODULE is the Module object type
+	MODULE = "module"
 )
 
 // Comparable is the interface for comparing two Object and their underlying
