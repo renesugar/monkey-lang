@@ -11,6 +11,7 @@ import (
 	"github.com/prologic/monkey-lang/lexer"
 	"github.com/prologic/monkey-lang/object"
 	"github.com/prologic/monkey-lang/parser"
+	"github.com/prologic/monkey-lang/utils"
 )
 
 func assertEvaluated(t *testing.T, expected interface{}, actual object.Object) {
@@ -20,20 +21,29 @@ func assertEvaluated(t *testing.T, expected interface{}, actual object.Object) {
 
 	switch expected.(type) {
 	case nil:
-		_, ok := actual.(*object.Null)
-		assert.True(ok)
+		if _, ok := actual.(*object.Null); ok {
+			assert.True(ok)
+		} else {
+			assert.Equal(expected, actual)
+		}
 	case int:
-		i, ok := actual.(*object.Integer)
-		assert.True(ok)
-		assert.Equal(int64(expected.(int)), i.Value)
+		if i, ok := actual.(*object.Integer); ok {
+			assert.Equal(int64(expected.(int)), i.Value)
+		} else {
+			assert.Equal(expected, actual)
+		}
 	case error:
-		e, ok := actual.(*object.Integer)
-		assert.True(ok)
-		assert.Equal(expected.(error).Error(), e.Value)
+		if e, ok := actual.(*object.Integer); ok {
+			assert.Equal(expected.(error).Error(), e.Value)
+		} else {
+			assert.Equal(expected, actual)
+		}
 	case string:
-		s, ok := actual.(*object.String)
-		assert.True(ok)
-		assert.Equal(expected.(string), s.Value)
+		if s, ok := actual.(*object.String); ok {
+			assert.Equal(expected.(string), s.Value)
+		} else {
+			assert.Equal(expected, actual)
+		}
 	default:
 		t.Fatalf("unsupported type for expected got=%T", expected)
 	}
@@ -882,6 +892,23 @@ func TestImportExpressions(t *testing.T) {
 	}{
 		{`mod := import("../testdata/mod"); mod.A`, 5},
 		{`mod := import("../testdata/mod"); mod.Sum(2, 3)`, 5},
+		{`mod := import("../testdata/mod"); mod.a`, nil},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		assertEvaluated(t, tt.expected, evaluated)
+	}
+}
+
+func TestImportSearchPaths(t *testing.T) {
+	utils.AddPath("../testdata")
+
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`mod := import("mod"); mod.A`, 5},
 	}
 
 	for _, tt := range tests {

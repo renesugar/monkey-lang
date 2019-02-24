@@ -6,13 +6,18 @@ package vm
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"strings"
+	"unicode"
 
 	"github.com/prologic/monkey-lang/builtins"
 	"github.com/prologic/monkey-lang/code"
 	"github.com/prologic/monkey-lang/compiler"
+	"github.com/prologic/monkey-lang/lexer"
 	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/parser"
+	"github.com/prologic/monkey-lang/utils"
 )
 
 const (
@@ -46,6 +51,80 @@ func isTruthy(obj object.Object) bool {
 	default:
 		return true
 	}
+}
+
+// ExecModule compiles the named module and returns a *object.Module object
+func ExecModule(name string) (object.Object, error) {
+	filename := utils.FindModule(name)
+	if filename == "" {
+		return nil, fmt.Errorf("ImportError: no module named '%s'", name)
+	}
+
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("IOError: error reading module '%s': %s", name, err)
+	}
+
+	l := lexer.New(string(b))
+	p := parser.New(l)
+
+	module := p.ParseProgram()
+	if len(p.Errors()) != 0 {
+		return nil, fmt.Errorf("ParseError: %s", p.Errors())
+	}
+
+	state := NewVMState()
+
+	c := compiler.NewWithState(state.Symbols, state.Constants)
+	err = c.Compile(module)
+	if err != nil {
+		return nil, fmt.Errorf("CompileError: %s", err)
+	}
+
+	machine := NewWithGlobalsStore(c.Bytecode(), state.Globals)
+	err = machine.Run()
+	if err != nil {
+		return nil, fmt.Errorf("RuntimeError: error loading module '%s'", err)
+	}
+
+	return state.ExportedHash(), nil
+}
+
+type VMState struct {
+	Constants []object.Object
+	Globals   []object.Object
+	Symbols   *compiler.SymbolTable
+}
+
+func NewVMState() *VMState {
+	symbolTable := compiler.NewSymbolTable()
+	for i, builtin := range builtins.BuiltinsIndex {
+		symbolTable.DefineBuiltin(i, builtin.Name)
+	}
+
+	return &VMState{
+		Constants: []object.Object{},
+		Globals:   make([]object.Object, MaxGlobals),
+		Symbols:   symbolTable,
+	}
+}
+
+// ExportedHash returns a new Hash with the names and values of every publically
+// exported binding in the vm state. That is every binding that starts with a
+// capital letter. This is used by the module import system to wrap up the
+// compiled and evaulated module into an object.
+func (s *VMState) ExportedHash() *object.Hash {
+	pairs := make(map[object.HashKey]object.HashPair)
+	for name, symbol := range s.Symbols.Store {
+		if unicode.IsUpper(rune(name[0])) {
+			if symbol.Scope == compiler.GlobalScope {
+				obj := s.Globals[symbol.Index]
+				s := &object.String{Value: name}
+				pairs[s.HashKey()] = object.HashPair{Key: s, Value: obj}
+			}
+		}
+	}
+	return &object.Hash{Pairs: pairs}
 }
 
 type VM struct {
@@ -353,6 +432,8 @@ func (vm *VM) executeGetItem(left, index object.Object) error {
 		return vm.executeArrayGetItem(left, index)
 	case left.Type() == object.HASH:
 		return vm.executeHashGetItem(left, index)
+	case left.Type() == object.MODULE:
+		return vm.executeHashGetItem(left.(*object.Module).Attrs, index)
 	default:
 		return fmt.Errorf(
 			"index operator not supported: left=%s index=%s",
@@ -543,6 +624,24 @@ func (vm *VM) pushClosure(constIndex, numFree int) error {
 	return vm.push(closure)
 }
 
+func (vm *VM) loadModule(name object.Object) error {
+	s, ok := name.(*object.String)
+	if !ok {
+		return fmt.Errorf(
+			"TypeError: import() expected argument #1 to be `str` got `%s`",
+			name.Type(),
+		)
+	}
+
+	attrs, err := ExecModule(s.Value)
+	if err != nil {
+		return err
+	}
+
+	module := &object.Module{Name: s.Value, Attrs: attrs}
+	return vm.push(module)
+}
+
 func (vm *VM) LastPopped() object.Object {
 	return vm.stack[vm.sp]
 }
@@ -679,6 +778,14 @@ func (vm *VM) Run() error {
 
 			currentClosure := vm.currentFrame().cl
 			err := vm.push(currentClosure.Free[freeIndex])
+			if err != nil {
+				return err
+			}
+
+		case code.LoadModule:
+			name := vm.pop()
+
+			err := vm.loadModule(name)
 			if err != nil {
 				return err
 			}

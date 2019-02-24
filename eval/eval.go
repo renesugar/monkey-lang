@@ -14,6 +14,7 @@ import (
 	"github.com/prologic/monkey-lang/lexer"
 	"github.com/prologic/monkey-lang/object"
 	"github.com/prologic/monkey-lang/parser"
+	"github.com/prologic/monkey-lang/utils"
 )
 
 var (
@@ -40,8 +41,12 @@ func newError(format string, a ...interface{}) *object.Error {
 
 // EvalModule evaluates the named module and returns a *object.Module object
 func EvalModule(name string) object.Object {
-	// TODO: Add MONKEYPATH search support
-	b, err := ioutil.ReadFile(fmt.Sprintf("%s.monkey", name))
+	filename := utils.FindModule(name)
+	if filename == "" {
+		return newError("ImportError: no module named '%s'", name)
+	}
+
+	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return newError("IOError: error reading module '%s': %s", name, err)
 	}
@@ -57,7 +62,7 @@ func EvalModule(name string) object.Object {
 	env := object.NewEnvironment()
 	Eval(module, env)
 
-	return env.Hash()
+	return env.ExportedHash()
 }
 
 // Eval evaluates the node and returns an object

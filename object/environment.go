@@ -1,5 +1,9 @@
 package object
 
+import (
+	"unicode"
+)
+
 // NewEnvironment constructs a new Environment object to hold bindings
 // of identifiers to their names
 func NewEnvironment() *Environment {
@@ -13,14 +17,17 @@ type Environment struct {
 	parent *Environment
 }
 
-// Hash returns a new Hash with the names and values of every value in the
-// environment. This is used by the module import system to wrap up the
+// ExportedHash returns a new Hash with the names and values of every publically
+// exported binding in the environment. That is every binding that starts with a
+// capital letter. This is used by the module import system to wrap up the
 // evaulated module into an object.
-func (e *Environment) Hash() *Hash {
+func (e *Environment) ExportedHash() *Hash {
 	pairs := make(map[HashKey]HashPair)
 	for k, v := range e.store {
-		s := &String{Value: k}
-		pairs[s.HashKey()] = HashPair{Key: s, Value: v}
+		if unicode.IsUpper(rune(k[0])) {
+			s := &String{Value: k}
+			pairs[s.HashKey()] = HashPair{Key: s, Value: v}
+		}
 	}
 	return &Hash{Pairs: pairs}
 }

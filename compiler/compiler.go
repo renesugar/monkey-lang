@@ -386,6 +386,16 @@ func (c *Compiler) Compile(node ast.Node) error {
 		afterConsequencePos := c.emit(code.LoadNull)
 		c.changeOperand(jumpIfFalsePos, afterConsequencePos)
 
+	case *ast.ImportExpression:
+		c.l++
+		err := c.Compile(node.Name)
+		if err != nil {
+			return err
+		}
+		c.l--
+
+		c.emit(code.LoadModule)
+
 	case *ast.PrefixExpression:
 		c.l++
 		err := c.Compile(node.Right)

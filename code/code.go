@@ -79,6 +79,7 @@ const (
 	LoadLocal
 	BindLocal
 	LoadFree
+	LoadModule
 	SetSelf
 	LoadTrue
 	LoadFalse
@@ -128,6 +129,7 @@ var definitions = map[Opcode]*Definition{
 	LoadLocal:        {"LoadLocal", []int{1}},
 	BindLocal:        {"BindLocal", []int{1}},
 	LoadFree:         {"LoadFree", []int{1}},
+	LoadModule:       {"LoadModule", []int{}},
 	SetSelf:          {"SetSelf", []int{1}},
 	LoadTrue:         {"LoadTrue", []int{}},
 	LoadFalse:        {"LoadFalse", []int{}},

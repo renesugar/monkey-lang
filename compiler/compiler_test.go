@@ -1114,3 +1114,15 @@ func TestClosures(t *testing.T) {
 
 	runCompilerTests2(t, tests)
 }
+
+func TestImportExpressions(t *testing.T) {
+	tests := []compilerTestCase2{
+		{
+			input:        `import("foo")`,
+			constants:    []interface{}{"foo"},
+			instructions: "0000 LoadConstant 0\n0003 LoadModule\n0004 Pop\n",
+		},
+	}
+
+	runCompilerTests2(t, tests)
+}
