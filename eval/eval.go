@@ -6,11 +6,15 @@ package eval
 
 import (
 	"fmt"
+	"io/ioutil"
 	"strings"
 
 	"github.com/prologic/monkey-lang/ast"
 	"github.com/prologic/monkey-lang/builtins"
+	"github.com/prologic/monkey-lang/lexer"
 	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/parser"
+	"github.com/prologic/monkey-lang/utils"
 )
 
 var (
@@ -33,6 +37,32 @@ func fromNativeBoolean(input bool) *object.Boolean {
 
 func newError(format string, a ...interface{}) *object.Error {
 	return &object.Error{Message: fmt.Sprintf(format, a...)}
+}
+
+// EvalModule evaluates the named module and returns a *object.Module object
+func EvalModule(name string) object.Object {
+	filename := utils.FindModule(name)
+	if filename == "" {
+		return newError("ImportError: no module named '%s'", name)
+	}
+
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return newError("IOError: error reading module '%s': %s", name, err)
+	}
+
+	l := lexer.New(string(b))
+	p := parser.New(l)
+
+	module := p.ParseProgram()
+	if len(p.Errors()) != 0 {
+		return newError("ParseError: %s", p.Errors())
+	}
+
+	env := object.NewEnvironment()
+	Eval(module, env)
+
+	return env.ExportedHash()
 }
 
 // Eval evaluates the node and returns an object
@@ -90,6 +120,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalIfExpression(node, env)
 	case *ast.WhileExpression:
 		return evalWhileExpression(node, env)
+	case *ast.ImportExpression:
+		return evalImportExpression(node, env)
 
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
@@ -496,9 +528,24 @@ func evalWhileExpression(we *ast.WhileExpression, env *object.Environment) objec
 
 	if result != nil {
 		return result
-	} else {
-		return NULL
 	}
+	return NULL
+}
+
+func evalImportExpression(ie *ast.ImportExpression, env *object.Environment) object.Object {
+	name := Eval(ie.Name, env)
+	if isError(name) {
+		return name
+	}
+
+	if s, ok := name.(*object.String); ok {
+		attrs := EvalModule(s.Value)
+		if isError(attrs) {
+			return attrs
+		}
+		return &object.Module{Name: s.Value, Attrs: attrs}
+	}
+	return newError("ImportError: invalid import path '%s'", name)
 }
 
 func isTruthy(obj object.Object) bool {
@@ -613,6 +660,8 @@ func evalIndexExpression(left, index object.Object) object.Object {
 		return evalArrayIndexExpression(left, index)
 	case left.Type() == object.HASH:
 		return evalHashIndexExpression(left, index)
+	case left.Type() == object.MODULE:
+		return evalModuleIndexExpression(left, index)
 	default:
 		return newError("index operator not supported: %s", left.Type())
 	}
@@ -632,6 +681,11 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 	}
 
 	return pair.Value
+}
+
+func evalModuleIndexExpression(module, index object.Object) object.Object {
+	moduleObject := module.(*object.Module)
+	return evalHashIndexExpression(moduleObject.Attrs, index)
 }
 
 func evalArrayIndexExpression(array, index object.Object) object.Object {

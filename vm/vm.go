@@ -6,13 +6,18 @@ package vm
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"strings"
+	"unicode"
 
 	"github.com/prologic/monkey-lang/builtins"
 	"github.com/prologic/monkey-lang/code"
 	"github.com/prologic/monkey-lang/compiler"
+	"github.com/prologic/monkey-lang/lexer"
 	"github.com/prologic/monkey-lang/object"
+	"github.com/prologic/monkey-lang/parser"
+	"github.com/prologic/monkey-lang/utils"
 )
 
 const (
@@ -48,18 +53,91 @@ func isTruthy(obj object.Object) bool {
 	}
 }
 
+// ExecModule compiles the named module and returns a *object.Module object
+func ExecModule(name string, state *VMState) (object.Object, error) {
+	filename := utils.FindModule(name)
+	if filename == "" {
+		return nil, fmt.Errorf("ImportError: no module named '%s'", name)
+	}
+
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("IOError: error reading module '%s': %s", name, err)
+	}
+
+	l := lexer.New(string(b))
+	p := parser.New(l)
+
+	module := p.ParseProgram()
+	if len(p.Errors()) != 0 {
+		return nil, fmt.Errorf("ParseError: %s", p.Errors())
+	}
+
+	c := compiler.NewWithState(state.Symbols, state.Constants)
+	err = c.Compile(module)
+	if err != nil {
+		return nil, fmt.Errorf("CompileError: %s", err)
+	}
+
+	code := c.Bytecode()
+	state.Constants = code.Constants
+
+	machine := NewWithState(code, state)
+	err = machine.Run()
+	if err != nil {
+		return nil, fmt.Errorf("RuntimeError: error loading module '%s'", err)
+	}
+
+	return state.ExportedHash(), nil
+}
+
+type VMState struct {
+	Constants []object.Object
+	Globals   []object.Object
+	Symbols   *compiler.SymbolTable
+}
+
+func NewVMState() *VMState {
+	symbolTable := compiler.NewSymbolTable()
+	for i, builtin := range builtins.BuiltinsIndex {
+		symbolTable.DefineBuiltin(i, builtin.Name)
+	}
+
+	return &VMState{
+		Constants: []object.Object{},
+		Globals:   make([]object.Object, MaxGlobals),
+		Symbols:   symbolTable,
+	}
+}
+
+// ExportedHash returns a new Hash with the names and values of every publically
+// exported binding in the vm state. That is every binding that starts with a
+// capital letter. This is used by the module import system to wrap up the
+// compiled and evaulated module into an object.
+func (s *VMState) ExportedHash() *object.Hash {
+	pairs := make(map[object.HashKey]object.HashPair)
+	for name, symbol := range s.Symbols.Store {
+		if unicode.IsUpper(rune(name[0])) {
+			if symbol.Scope == compiler.GlobalScope {
+				obj := s.Globals[symbol.Index]
+				s := &object.String{Value: name}
+				pairs[s.HashKey()] = object.HashPair{Key: s, Value: obj}
+			}
+		}
+	}
+	return &object.Hash{Pairs: pairs}
+}
+
 type VM struct {
 	Debug bool
 
-	constants []object.Object
+	state *VMState
 
 	frames      []*Frame
 	framesIndex int
 
 	stack []object.Object
 	sp    int // Always points to the next value. Top of stack is stack[sp-1]
-
-	globals []object.Object
 }
 
 func (vm *VM) currentFrame() *Frame {
@@ -84,20 +162,21 @@ func New(bytecode *compiler.Bytecode) *VM {
 	frames := make([]*Frame, MaxFrames)
 	frames[0] = mainFrame
 
+	state := NewVMState()
+	state.Constants = bytecode.Constants
+
 	return &VM{
-		constants: bytecode.Constants,
+		state: state,
 
 		frames:      frames,
 		framesIndex: 1,
 
 		stack: make([]object.Object, StackSize),
 		sp:    0,
-
-		globals: make([]object.Object, MaxGlobals),
 	}
 }
 
-func NewWithGlobalsStore(bytecode *compiler.Bytecode, globals []object.Object) *VM {
+func NewWithState(bytecode *compiler.Bytecode, state *VMState) *VM {
 	mainFn := &object.CompiledFunction{Instructions: bytecode.Instructions}
 	mainClosure := &object.Closure{Fn: mainFn}
 	mainFrame := NewFrame(mainClosure, 0)
@@ -106,15 +185,13 @@ func NewWithGlobalsStore(bytecode *compiler.Bytecode, globals []object.Object) *
 	frames[0] = mainFrame
 
 	return &VM{
-		constants: bytecode.Constants,
+		state: state,
 
 		frames:      frames,
 		framesIndex: 1,
 
 		stack: make([]object.Object, StackSize),
 		sp:    0,
-
-		globals: globals,
 	}
 }
 
@@ -353,6 +430,8 @@ func (vm *VM) executeGetItem(left, index object.Object) error {
 		return vm.executeArrayGetItem(left, index)
 	case left.Type() == object.HASH:
 		return vm.executeHashGetItem(left, index)
+	case left.Type() == object.MODULE:
+		return vm.executeHashGetItem(left.(*object.Module).Attrs, index)
 	default:
 		return fmt.Errorf(
 			"index operator not supported: left=%s index=%s",
@@ -527,7 +606,7 @@ func (vm *VM) callBuiltin(builtin *object.Builtin, numArgs int) error {
 }
 
 func (vm *VM) pushClosure(constIndex, numFree int) error {
-	constant := vm.constants[constIndex]
+	constant := vm.state.Constants[constIndex]
 	function, ok := constant.(*object.CompiledFunction)
 	if !ok {
 		return fmt.Errorf("not a function: %+v", constant)
@@ -541,6 +620,24 @@ func (vm *VM) pushClosure(constIndex, numFree int) error {
 
 	closure := &object.Closure{Fn: function, Free: free}
 	return vm.push(closure)
+}
+
+func (vm *VM) loadModule(name object.Object) error {
+	s, ok := name.(*object.String)
+	if !ok {
+		return fmt.Errorf(
+			"TypeError: import() expected argument #1 to be `str` got `%s`",
+			name.Type(),
+		)
+	}
+
+	attrs, err := ExecModule(s.Value, vm.state)
+	if err != nil {
+		return err
+	}
+
+	module := &object.Module{Name: s.Value, Attrs: attrs}
+	return vm.push(module)
 }
 
 func (vm *VM) LastPopped() object.Object {
@@ -592,7 +689,7 @@ func (vm *VM) Run() error {
 			constIndex := code.ReadUint16(ins[ip+1:])
 			vm.currentFrame().ip += 2
 
-			err := vm.push(vm.constants[constIndex])
+			err := vm.push(vm.state.Constants[constIndex])
 			if err != nil {
 				return err
 			}
@@ -600,7 +697,7 @@ func (vm *VM) Run() error {
 		case code.AssignGlobal:
 			globalIndex := code.ReadUint16(ins[ip+1:])
 			vm.currentFrame().ip += 2
-			vm.globals[globalIndex] = vm.pop()
+			vm.state.Globals[globalIndex] = vm.pop()
 
 			err := vm.push(Null)
 			if err != nil {
@@ -625,9 +722,9 @@ func (vm *VM) Run() error {
 
 			ref := vm.pop()
 			if immutable, ok := ref.(object.Immutable); ok {
-				vm.globals[globalIndex] = immutable.Clone()
+				vm.state.Globals[globalIndex] = immutable.Clone()
 			} else {
-				vm.globals[globalIndex] = ref
+				vm.state.Globals[globalIndex] = ref
 			}
 
 			err := vm.push(Null)
@@ -639,7 +736,7 @@ func (vm *VM) Run() error {
 			globalIndex := code.ReadUint16(ins[ip+1:])
 			vm.currentFrame().ip += 2
 
-			err := vm.push(vm.globals[globalIndex])
+			err := vm.push(vm.state.Globals[globalIndex])
 			if err != nil {
 				return err
 			}
@@ -679,6 +776,14 @@ func (vm *VM) Run() error {
 
 			currentClosure := vm.currentFrame().cl
 			err := vm.push(currentClosure.Free[freeIndex])
+			if err != nil {
+				return err
+			}
+
+		case code.LoadModule:
+			name := vm.pop()
+
+			err := vm.loadModule(name)
 			if err != nil {
 				return err
 			}

@@ -136,6 +136,8 @@ const (
 	RETURN = "RETURN"
 	// WHILE the `while` keyword (while)
 	WHILE = "WHILE"
+	// IMPORT the `import` keyword (import)
+	IMPORT = "IMPORT"
 )
 
 var keywords = map[string]Type{
@@ -147,6 +149,7 @@ var keywords = map[string]Type{
 	"else":   ELSE,
 	"return": RETURN,
 	"while":  WHILE,
+	"import": IMPORT,
 }
 
 // Type represents the type of a token

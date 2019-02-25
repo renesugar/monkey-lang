@@ -11,7 +11,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/prologic/monkey-lang/builtins"
 	"github.com/prologic/monkey-lang/compiler"
 	"github.com/prologic/monkey-lang/eval"
 	"github.com/prologic/monkey-lang/lexer"
@@ -42,25 +41,6 @@ type Options struct {
 	Debug       bool
 	Engine      string
 	Interactive bool
-}
-
-type VMState struct {
-	constants []object.Object
-	globals   []object.Object
-	symbols   *compiler.SymbolTable
-}
-
-func NewVMState() *VMState {
-	symbolTable := compiler.NewSymbolTable()
-	for i, builtin := range builtins.BuiltinsIndex {
-		symbolTable.DefineBuiltin(i, builtin.Name)
-	}
-
-	return &VMState{
-		constants: []object.Object{},
-		globals:   make([]object.Object, vm.MaxGlobals),
-		symbols:   symbolTable,
-	}
 }
 
 type REPL struct {
@@ -103,14 +83,14 @@ func (r *REPL) Eval(f io.Reader) (env *object.Environment) {
 
 // Exec parses, compiles and executes the program given by f and returns
 // the resulting virtual machine, any errors are printed to stderr
-func (r *REPL) Exec(f io.Reader) (state *VMState) {
+func (r *REPL) Exec(f io.Reader) (state *vm.VMState) {
 	b, err := ioutil.ReadAll(f)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error reading source file: %s", err)
 		return
 	}
 
-	state = NewVMState()
+	state = vm.NewVMState()
 
 	l := lexer.New(string(b))
 	p := parser.New(l)
@@ -121,7 +101,7 @@ func (r *REPL) Exec(f io.Reader) (state *VMState) {
 		return
 	}
 
-	c := compiler.NewWithState(state.symbols, state.constants)
+	c := compiler.NewWithState(state.Symbols, state.Constants)
 	c.Debug = r.opts.Debug
 	err = c.Compile(program)
 	if err != nil {
@@ -130,9 +110,9 @@ func (r *REPL) Exec(f io.Reader) (state *VMState) {
 	}
 
 	code := c.Bytecode()
-	state.constants = code.Constants
+	state.Constants = code.Constants
 
-	machine := vm.NewWithGlobalsStore(code, state.globals)
+	machine := vm.NewWithState(code, state)
 	machine.Debug = r.opts.Debug
 	err = machine.Run()
 	if err != nil {
@@ -180,11 +160,11 @@ func (r *REPL) StartEvalLoop(in io.Reader, out io.Writer, env *object.Environmen
 }
 
 // StartExecLoop starts the REPL in a continious exec loop
-func (r *REPL) StartExecLoop(in io.Reader, out io.Writer, state *VMState) {
+func (r *REPL) StartExecLoop(in io.Reader, out io.Writer, state *vm.VMState) {
 	scanner := bufio.NewScanner(in)
 
 	if state == nil {
-		state = NewVMState()
+		state = vm.NewVMState()
 	}
 
 	for {
@@ -205,7 +185,7 @@ func (r *REPL) StartExecLoop(in io.Reader, out io.Writer, state *VMState) {
 			continue
 		}
 
-		c := compiler.NewWithState(state.symbols, state.constants)
+		c := compiler.NewWithState(state.Symbols, state.Constants)
 		c.Debug = r.opts.Debug
 		err := c.Compile(program)
 		if err != nil {
@@ -214,9 +194,9 @@ func (r *REPL) StartExecLoop(in io.Reader, out io.Writer, state *VMState) {
 		}
 
 		code := c.Bytecode()
-		state.constants = code.Constants
+		state.Constants = code.Constants
 
-		machine := vm.NewWithGlobalsStore(code, state.globals)
+		machine := vm.NewWithState(code, state)
 		machine.Debug = r.opts.Debug
 		err = machine.Run()
 		if err != nil {

@@ -13,6 +13,7 @@ import (
 	"github.com/prologic/monkey-lang/lexer"
 	"github.com/prologic/monkey-lang/object"
 	"github.com/prologic/monkey-lang/parser"
+	"github.com/prologic/monkey-lang/utils"
 )
 
 func parse(input string) *ast.Program {
@@ -1032,6 +1033,38 @@ func TestCallingRecursiveFunctionsInFunctions(t *testing.T) {
 			wrapper();
 			`,
 			expected: 2,
+		},
+	}
+
+	runVmTests(t, tests)
+}
+
+func TestImportExpressions(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input:    `mod := import("../testdata/mod"); mod.A`,
+			expected: 5,
+		},
+		{
+			input:    `mod := import("../testdata/mod"); mod.Sum(2, 3)`,
+			expected: 5,
+		},
+		{
+			input:    `mod := import("../testdata/mod"); mod.a`,
+			expected: nil,
+		},
+	}
+
+	runVmTests(t, tests)
+}
+
+func TestImportSearchPaths(t *testing.T) {
+	utils.AddPath("../testdata")
+
+	tests := []vmTestCase{
+		{
+			input:    `mod := import("../testdata/mod"); mod.A`,
+			expected: 5,
 		},
 	}
 

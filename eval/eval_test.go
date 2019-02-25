@@ -6,10 +6,48 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/prologic/monkey-lang/lexer"
 	"github.com/prologic/monkey-lang/object"
 	"github.com/prologic/monkey-lang/parser"
+	"github.com/prologic/monkey-lang/utils"
 )
+
+func assertEvaluated(t *testing.T, expected interface{}, actual object.Object) {
+	t.Helper()
+
+	assert := assert.New(t)
+
+	switch expected.(type) {
+	case nil:
+		if _, ok := actual.(*object.Null); ok {
+			assert.True(ok)
+		} else {
+			assert.Equal(expected, actual)
+		}
+	case int:
+		if i, ok := actual.(*object.Integer); ok {
+			assert.Equal(int64(expected.(int)), i.Value)
+		} else {
+			assert.Equal(expected, actual)
+		}
+	case error:
+		if e, ok := actual.(*object.Integer); ok {
+			assert.Equal(expected.(error).Error(), e.Value)
+		} else {
+			assert.Equal(expected, actual)
+		}
+	case string:
+		if s, ok := actual.(*object.String); ok {
+			assert.Equal(expected.(string), s.Value)
+		} else {
+			assert.Equal(expected, actual)
+		}
+	default:
+		t.Fatalf("unsupported type for expected got=%T", expected)
+	}
+}
 
 func TestEvalExpressions(t *testing.T) {
 	tests := []struct {
@@ -844,6 +882,38 @@ func TestHashIndexExpressions(t *testing.T) {
 		} else {
 			testNullObject(t, evaluated)
 		}
+	}
+}
+
+func TestImportExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`mod := import("../testdata/mod"); mod.A`, 5},
+		{`mod := import("../testdata/mod"); mod.Sum(2, 3)`, 5},
+		{`mod := import("../testdata/mod"); mod.a`, nil},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		assertEvaluated(t, tt.expected, evaluated)
+	}
+}
+
+func TestImportSearchPaths(t *testing.T) {
+	utils.AddPath("../testdata")
+
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`mod := import("mod"); mod.A`, 5},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		assertEvaluated(t, tt.expected, evaluated)
 	}
 }
 
