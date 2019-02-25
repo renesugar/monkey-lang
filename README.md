@@ -420,9 +420,9 @@ Operator   | Types           | Action
   Returns the index of `needle` `str` in `haystack` `str`,
   or the index of `needle` element in `haystack` array.
   Returns -1 if not found.
-- `read(filename)`
+- `readfile(filename)`
   Reads the contents of the file `filename` and returns it as a `str`.
-- `write(filename, data)`
+- `writefile(filename, data)`
   Writes `data` to a file `filename`.
 - `abs(n)`
   Returns the absolute value of the `n`.

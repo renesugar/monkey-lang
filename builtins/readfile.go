@@ -7,10 +7,10 @@ import (
 	"github.com/prologic/monkey-lang/typing"
 )
 
-// Read ...
-func Read(args ...object.Object) object.Object {
+// ReadFile ...
+func ReadFile(args ...object.Object) object.Object {
 	if err := typing.Check(
-		"read", args,
+		"readfile", args,
 		typing.ExactArgs(1),
 		typing.WithTypes(object.STRING),
 	); err != nil {

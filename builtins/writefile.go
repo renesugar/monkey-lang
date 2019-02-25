@@ -7,10 +7,10 @@ import (
 	"github.com/prologic/monkey-lang/typing"
 )
 
-// Write ...
-func Write(args ...object.Object) object.Object {
+// WriteFile ...
+func WriteFile(args ...object.Object) object.Object {
 	if err := typing.Check(
-		"write", args,
+		"writefile", args,
 		typing.ExactArgs(2),
 		typing.WithTypes(object.STRING, object.STRING),
 	); err != nil {
