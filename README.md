@@ -10,6 +10,32 @@ Monkey programming language interpreter designed in [_Writing An Interpreter In 
 A step-by-step walk-through where each commit is a fully working part.
 Read the book and follow along with the commit history.
 
+## Table of Contents
+
+* [monkey\-lang](#monkey-lang)
+  * [Status](#status)
+  * [Read and Follow](#read-and-follow)
+  * [Quickstart](#quickstart)
+  * [Development](#development)
+  * [Monkey Language](#monkey-language)
+    * [Programs](#programs)
+    * [Types](#types)
+    * [Variable Bindings](#variable-bindings)
+    * [Artithmetic Expressions](#artithmetic-expressions)
+    * [Conditional Expressions](#conditional-expressions)
+    * [While Loops](#while-loops)
+    * [Functions and Closures](#functions-and-closures)
+    * [Recursive Functions](#recursive-functions)
+    * [Strings](#strings)
+    * [Arrays](#arrays)
+    * [Hashes](#hashes)
+    * [Assignment Expressions](#assignment-expressions)
+    * [Binary and unary operators](#binary-and-unary-operators)
+    * [Builtin functions](#builtin-functions)
+    * [Objects](#objects)
+    * [Modules](#modules)
+  * [License](#license)
+
 ## Status
 
 > Still working on a self-hosted Monkey lang (*Monkey written in Monkey*).
