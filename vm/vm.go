@@ -54,7 +54,7 @@ func isTruthy(obj object.Object) bool {
 }
 
 // ExecModule compiles the named module and returns a *object.Module object
-func ExecModule(name string) (object.Object, error) {
+func ExecModule(name string, state *VMState) (object.Object, error) {
 	filename := utils.FindModule(name)
 	if filename == "" {
 		return nil, fmt.Errorf("ImportError: no module named '%s'", name)
@@ -73,15 +73,16 @@ func ExecModule(name string) (object.Object, error) {
 		return nil, fmt.Errorf("ParseError: %s", p.Errors())
 	}
 
-	state := NewVMState()
-
 	c := compiler.NewWithState(state.Symbols, state.Constants)
 	err = c.Compile(module)
 	if err != nil {
 		return nil, fmt.Errorf("CompileError: %s", err)
 	}
 
-	machine := NewWithGlobalsStore(c.Bytecode(), state.Globals)
+	code := c.Bytecode()
+	state.Constants = code.Constants
+
+	machine := NewWithState(code, state)
 	err = machine.Run()
 	if err != nil {
 		return nil, fmt.Errorf("RuntimeError: error loading module '%s'", err)
@@ -130,15 +131,13 @@ func (s *VMState) ExportedHash() *object.Hash {
 type VM struct {
 	Debug bool
 
-	constants []object.Object
+	state *VMState
 
 	frames      []*Frame
 	framesIndex int
 
 	stack []object.Object
 	sp    int // Always points to the next value. Top of stack is stack[sp-1]
-
-	globals []object.Object
 }
 
 func (vm *VM) currentFrame() *Frame {
@@ -163,20 +162,21 @@ func New(bytecode *compiler.Bytecode) *VM {
 	frames := make([]*Frame, MaxFrames)
 	frames[0] = mainFrame
 
+	state := NewVMState()
+	state.Constants = bytecode.Constants
+
 	return &VM{
-		constants: bytecode.Constants,
+		state: state,
 
 		frames:      frames,
 		framesIndex: 1,
 
 		stack: make([]object.Object, StackSize),
 		sp:    0,
-
-		globals: make([]object.Object, MaxGlobals),
 	}
 }
 
-func NewWithGlobalsStore(bytecode *compiler.Bytecode, globals []object.Object) *VM {
+func NewWithState(bytecode *compiler.Bytecode, state *VMState) *VM {
 	mainFn := &object.CompiledFunction{Instructions: bytecode.Instructions}
 	mainClosure := &object.Closure{Fn: mainFn}
 	mainFrame := NewFrame(mainClosure, 0)
@@ -185,15 +185,13 @@ func NewWithGlobalsStore(bytecode *compiler.Bytecode, globals []object.Object) *
 	frames[0] = mainFrame
 
 	return &VM{
-		constants: bytecode.Constants,
+		state: state,
 
 		frames:      frames,
 		framesIndex: 1,
 
 		stack: make([]object.Object, StackSize),
 		sp:    0,
-
-		globals: globals,
 	}
 }
 
@@ -608,7 +606,7 @@ func (vm *VM) callBuiltin(builtin *object.Builtin, numArgs int) error {
 }
 
 func (vm *VM) pushClosure(constIndex, numFree int) error {
-	constant := vm.constants[constIndex]
+	constant := vm.state.Constants[constIndex]
 	function, ok := constant.(*object.CompiledFunction)
 	if !ok {
 		return fmt.Errorf("not a function: %+v", constant)
@@ -633,7 +631,7 @@ func (vm *VM) loadModule(name object.Object) error {
 		)
 	}
 
-	attrs, err := ExecModule(s.Value)
+	attrs, err := ExecModule(s.Value, vm.state)
 	if err != nil {
 		return err
 	}
@@ -691,7 +689,7 @@ func (vm *VM) Run() error {
 			constIndex := code.ReadUint16(ins[ip+1:])
 			vm.currentFrame().ip += 2
 
-			err := vm.push(vm.constants[constIndex])
+			err := vm.push(vm.state.Constants[constIndex])
 			if err != nil {
 				return err
 			}
@@ -699,7 +697,7 @@ func (vm *VM) Run() error {
 		case code.AssignGlobal:
 			globalIndex := code.ReadUint16(ins[ip+1:])
 			vm.currentFrame().ip += 2
-			vm.globals[globalIndex] = vm.pop()
+			vm.state.Globals[globalIndex] = vm.pop()
 
 			err := vm.push(Null)
 			if err != nil {
@@ -724,9 +722,9 @@ func (vm *VM) Run() error {
 
 			ref := vm.pop()
 			if immutable, ok := ref.(object.Immutable); ok {
-				vm.globals[globalIndex] = immutable.Clone()
+				vm.state.Globals[globalIndex] = immutable.Clone()
 			} else {
-				vm.globals[globalIndex] = ref
+				vm.state.Globals[globalIndex] = ref
 			}
 
 			err := vm.push(Null)
@@ -738,7 +736,7 @@ func (vm *VM) Run() error {
 			globalIndex := code.ReadUint16(ins[ip+1:])
 			vm.currentFrame().ip += 2
 
-			err := vm.push(vm.globals[globalIndex])
+			err := vm.push(vm.state.Globals[globalIndex])
 			if err != nil {
 				return err
 			}

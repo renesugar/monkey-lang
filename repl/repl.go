@@ -112,7 +112,7 @@ func (r *REPL) Exec(f io.Reader) (state *vm.VMState) {
 	code := c.Bytecode()
 	state.Constants = code.Constants
 
-	machine := vm.NewWithGlobalsStore(code, state.Globals)
+	machine := vm.NewWithState(code, state)
 	machine.Debug = r.opts.Debug
 	err = machine.Run()
 	if err != nil {
@@ -196,7 +196,7 @@ func (r *REPL) StartExecLoop(in io.Reader, out io.Writer, state *vm.VMState) {
 		code := c.Bytecode()
 		state.Constants = code.Constants
 
-		machine := vm.NewWithGlobalsStore(code, state.Globals)
+		machine := vm.NewWithState(code, state)
 		machine.Debug = r.opts.Debug
 		err = machine.Run()
 		if err != nil {
