@@ -438,6 +438,23 @@ Operator   | Types           | Action
 "John, aged 35"
 ```
 
+### Modules
+
+Monkey supports modules. Modules are just like other Monkey source files
+with the extension `.monkey`.  Modules are searched for by `SearchPaths`
+which can be controlled by the environment `MONKEYPATH`. By default this is
+always the current directory.
+
+To import a module:
+
+```
+>> foo := import("foo")
+>> foo.A
+5
+>> foo.Sum(2, 3)
+5
+```
+
 ## License
 
 This work is licensed under the terms of the MIT License.
