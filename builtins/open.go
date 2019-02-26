@@ -34,7 +34,7 @@ func parseMode(mode string) (int, error) {
 			log.Printf("a1")
 			flag |= os.O_APPEND
 		default:
-			return 0, fmt.Errorf("ValueError: mode string must be one of 'r', 'w', 'a', not '%s'", c)
+			return 0, fmt.Errorf("ValueError: mode string must be one of 'r', 'w', 'a', not '%c'", c)
 		}
 	}
 
