@@ -454,6 +454,18 @@ Operator   | Types           | Action
   Elements in the `array` must be orderable with `<` (`int`, `str`, or `array` of those).
 - `reversed(array)`
   Reverses the array `array` and returns a new `array`.
+- `open(filename[, mode])`
+- `write(fd, data)`
+  Writes `str` `data` to the open file descriptor given by `int` `fd`.
+- `read(fd, [n])`
+  Reads from the file descriptor `fd` (`int`) optinoally up to `n` (`int`)
+  bytes and returns the read data as a `str`.
+- `close(fd)`
+  Closes the open file descriptor given by `fd` (`int`).
+- `seek(fd, offset[, whence])`
+  Seeks the file descriptor `fd` (`int`) to the `offset` (`int`). The optional
+  `whence` (`int`) determins whether to seek from the beginning of the file (`0`),
+  relativie to the current offset (`1`) or the end of the file (`2`).
 
 ### Objects
 

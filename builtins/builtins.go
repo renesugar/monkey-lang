@@ -46,6 +46,11 @@ var Builtins = map[string]*Builtin{
 	"max":       &Builtin{Name: "max", Fn: Max},
 	"sorted":    &Builtin{Name: "sorted", Fn: Sorted},
 	"reversed":  &Builtin{Name: "reversed", Fn: Reversed},
+	"open":      &Builtin{Name: "open", Fn: Open},
+	"close":     &Builtin{Name: "close", Fn: Close},
+	"write":     &Builtin{Name: "write", Fn: Write},
+	"read":      &Builtin{Name: "read", Fn: Read},
+	"seek":      &Builtin{Name: "seek", Fn: Seek},
 }
 
 // BuiltinsIndex ...
