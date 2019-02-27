@@ -466,6 +466,11 @@ Operator   | Types           | Action
   Seeks the file descriptor `fd` (`int`) to the `offset` (`int`). The optional
   `whence` (`int`) determins whether to seek from the beginning of the file (`0`),
   relativie to the current offset (`1`) or the end of the file (`2`).
+- `socket(type)`
+- `bind(fd, address)`
+- `listen(fd, backlog)`
+- `accept(fd)`
+- `connect(fd, address)`
 
 ### Objects
 

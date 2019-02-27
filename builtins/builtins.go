@@ -51,6 +51,11 @@ var Builtins = map[string]*Builtin{
 	"write":     &Builtin{Name: "write", Fn: Write},
 	"read":      &Builtin{Name: "read", Fn: Read},
 	"seek":      &Builtin{Name: "seek", Fn: Seek},
+	"socket":    &Builtin{Name: "socket", Fn: Socket},
+	"bind":      &Builtin{Name: "bind", Fn: Bind},
+	"accept":    &Builtin{Name: "accept", Fn: Accept},
+	"listen":    &Builtin{Name: "listen", Fn: Listen},
+	"connect":   &Builtin{Name: "connect", Fn: Connect},
 }
 
 // BuiltinsIndex ...
