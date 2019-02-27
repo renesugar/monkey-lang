@@ -2,7 +2,6 @@ package builtins
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"syscall"
 
@@ -16,22 +15,17 @@ func parseMode(mode string) (int, error) {
 		switch c {
 		case 'r':
 			if (flag & os.O_WRONLY) != 0 {
-				log.Printf("r1")
 				flag |= os.O_RDWR
 			} else {
-				log.Printf("r2")
 				flag |= os.O_RDONLY
 			}
 		case 'w':
 			if (flag & os.O_RDONLY) != 0 {
-				log.Printf("w1")
 				flag |= os.O_RDWR
 			} else {
-				log.Printf("w2")
 				flag |= os.O_WRONLY
 			}
 		case 'a':
-			log.Printf("a1")
 			flag |= os.O_APPEND
 		default:
 			return 0, fmt.Errorf("ValueError: mode string must be one of 'r', 'w', 'a', not '%c'", c)
@@ -39,20 +33,11 @@ func parseMode(mode string) (int, error) {
 	}
 
 	if (flag&os.O_WRONLY) != 0 || (flag&os.O_RDWR) != 0 {
-		log.Printf("c1")
 		flag |= os.O_CREATE
 		if (flag & os.O_APPEND) == 0 {
-			log.Printf("t1")
 			flag |= os.O_TRUNC
 		}
 	}
-
-	log.Printf("flag: %#v\n", flag)
-
-	log.Println(flag == os.O_RDONLY)
-	log.Println(flag&os.O_RDONLY != 0)
-	log.Println(flag&os.O_WRONLY != 0)
-	log.Println(flag&os.O_RDWR != 0)
 
 	if !((flag == os.O_RDONLY) || (flag&os.O_WRONLY != 0) || (flag&os.O_RDWR != 0)) {
 		return 0, fmt.Errorf("ValueError: mode string must be at least one of 'r', 'w', or 'rw'")
