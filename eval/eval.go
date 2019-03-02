@@ -425,9 +425,9 @@ func evalBooleanInfixExpression(
 
 	switch operator {
 	case "&&":
-		return &object.Boolean{Value: leftVal && rightVal}
+		return fromNativeBoolean(leftVal && rightVal)
 	case "||":
-		return &object.Boolean{Value: leftVal || rightVal}
+		return fromNativeBoolean(leftVal || rightVal)
 	default:
 		return newError("unknown operator: %s %s %s",
 			left.Type(), operator, right.Type())
