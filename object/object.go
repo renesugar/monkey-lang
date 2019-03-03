@@ -5,6 +5,7 @@ package object
 // them as well as how the user interacts with values.
 
 import (
+	"encoding/gob"
 	"fmt"
 )
 
@@ -47,6 +48,9 @@ const (
 
 	// MODULE is the Module object type
 	MODULE = "module"
+
+	// ACTOR is the Actor object type
+	ACTOR = "actor"
 )
 
 // Comparable is the interface for comparing two Object and their underlying
@@ -75,6 +79,13 @@ type Hashable interface {
 	HashKey() HashKey
 }
 
+// Serializable is the interface for all objects which must implement the
+// Marshal and Unmarshal methods for serialization.
+type Serializable interface {
+	Marshal() ([]byte, error)
+	Unmarshal([]byte) (Object, error)
+}
+
 // BuiltinFunction represents the builtin function type
 type BuiltinFunction func(args ...Object) Object
 
@@ -88,4 +99,9 @@ type Object interface {
 	Type() Type
 	Bool() bool
 	Inspect() string
+}
+
+func init() {
+	gob.Register(&Integer{})
+	gob.Register(&String{})
 }

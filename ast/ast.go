@@ -157,6 +157,45 @@ func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
 // String returns a stringified version of the AST for debugging
 func (i *Identifier) String() string { return i.Value }
 
+// Start represents the start message
+type Start struct {
+	Token token.Token
+}
+
+func (s *Start) expressionNode() {}
+
+// TokenLiteral prints the literal value of the token associated with this node
+func (s *Start) TokenLiteral() string { return s.Token.Literal }
+
+// String returns a stringified version of the AST for debugging
+func (s *Start) String() string { return s.Token.Literal }
+
+// Stop represents the stop message
+type Stop struct {
+	Token token.Token
+}
+
+func (s *Stop) expressionNode() {}
+
+// TokenLiteral prints the literal value of the token associated with this node
+func (s *Stop) TokenLiteral() string { return s.Token.Literal }
+
+// String returns a stringified version of the AST for debugging
+func (s *Stop) String() string { return s.Token.Literal }
+
+// Noop represents the noop message
+type Noop struct {
+	Token token.Token
+}
+
+func (n *Noop) expressionNode() {}
+
+// TokenLiteral prints the literal value of the token associated with this node
+func (n *Noop) TokenLiteral() string { return n.Token.Literal }
+
+// String returns a stringified version of the AST for debugging
+func (n *Noop) String() string { return n.Token.Literal }
+
 // Null represents a null value
 type Null struct {
 	Token token.Token
@@ -316,6 +355,54 @@ func (we *WhileExpression) String() string {
 	out.WriteString(we.Condition.String())
 	out.WriteString(" ")
 	out.WriteString(we.Consequence.String())
+
+	return out.String()
+}
+
+// ActorExpression represents an `actor` expression and holds the handler
+// function of the actor being created.
+type ActorExpression struct {
+	Token   token.Token // The 'actor' token
+	Handler Expression
+}
+
+func (ae *ActorExpression) expressionNode() {}
+
+// TokenLiteral prints the literal value of the token associated with this node
+func (ae *ActorExpression) TokenLiteral() string { return ae.Token.Literal }
+
+// String returns a stringified version of the AST for debugging
+func (ae *ActorExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(ae.TokenLiteral())
+	out.WriteString("(")
+	out.WriteString(ae.String())
+	out.WriteString(")")
+
+	return out.String()
+}
+
+// SendExpression represents a send expression `actor <- msg` and holds the
+// receiving actor and value to be sent.
+type SendExpression struct {
+	Token   token.Token // The '<-' token
+	Actor   Expression
+	Message Expression
+}
+
+func (se *SendExpression) expressionNode() {}
+
+// TokenLiteral prints the literal value of the token associated with this node
+func (se *SendExpression) TokenLiteral() string { return se.Token.Literal }
+
+// String returns a stringified version of the AST for debugging
+func (se *SendExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(se.Actor.String())
+	out.WriteString(se.TokenLiteral())
+	out.WriteString(se.Message.String())
 
 	return out.String()
 }

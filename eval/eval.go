@@ -5,10 +5,13 @@ package eval
 // the nodes according to their semantic meaning
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"io/ioutil"
 	"strings"
 
+	"github.com/prologic/monkey-lang/actor"
 	"github.com/prologic/monkey-lang/ast"
 	"github.com/prologic/monkey-lang/builtins"
 	"github.com/prologic/monkey-lang/lexer"
@@ -37,6 +40,43 @@ func fromNativeBoolean(input bool) *object.Boolean {
 
 func newError(format string, a ...interface{}) *object.Error {
 	return &object.Error{Message: fmt.Sprintf(format, a...)}
+}
+
+type EvalActor struct {
+	fn  *object.Function
+	env *object.Environment
+}
+
+func NewEvalActor(fn *object.Function) *EvalActor {
+	return &EvalActor{
+		fn:  fn,
+		env: object.NewEnvironment(),
+	}
+}
+func (ea *EvalActor) Execute(msg actor.Message) error {
+	var obj object.Object
+
+	sender := &object.String{Value: msg.Address.String()}
+
+	if (msg.Flags & actor.Event) != 0 {
+		obj = &object.String{Value: string(msg.Payload)}
+	} else {
+		buffer := bytes.NewBuffer(msg.Payload)
+		dec := gob.NewDecoder(buffer)
+		err := dec.Decode(&obj)
+		if err != nil {
+			return err
+		}
+	}
+
+	fn := ea.fn
+	args := []object.Object{sender, obj}
+	env := extendFunctionEnv(fn, args)
+	result := unwrapReturnValue(Eval(fn.Body, env))
+	if err, ok := result.(*object.Error); ok {
+		return err.Error()
+	}
+	return nil
 }
 
 // EvalModule evaluates the named module and returns a *object.Module object
@@ -122,6 +162,10 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalWhileExpression(node, env)
 	case *ast.ImportExpression:
 		return evalImportExpression(node, env)
+	case *ast.ActorExpression:
+		return evalActorExpression(node, env)
+	case *ast.SendExpression:
+		return evalSendExpression(node, env)
 
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
@@ -530,6 +574,32 @@ func evalWhileExpression(we *ast.WhileExpression, env *object.Environment) objec
 		return result
 	}
 	return NULL
+}
+
+func evalSendExpression(se *ast.SendExpression, env *object.Environment) object.Object {
+	actor := Eval(se.Actor, env)
+	if actor, ok := actor.(*object.Actor); ok {
+		msg := Eval(se.Message, env)
+		if obj, ok := msg.(object.Immutable); ok {
+			actor.Send(obj.Clone())
+			return NULL
+		}
+		return newError("ActorError: message value must immutable got=%T", msg)
+	}
+	return newError("ActorError: expected actor on left got=%T", actor)
+}
+
+func evalActorExpression(ae *ast.ActorExpression, env *object.Environment) object.Object {
+	handler := Eval(ae.Handler, env)
+	if isError(handler) {
+		return handler
+	}
+
+	if fn, ok := handler.(*object.Function); ok {
+		return &object.Actor{actor.NewActor(&EvalActor{fn, env})}
+	}
+
+	return newError("ActorError: handler must be a function got=%T", handler.Type())
 }
 
 func evalImportExpression(ie *ast.ImportExpression, env *object.Environment) object.Object {

@@ -12,6 +12,7 @@ import (
 const (
 	_ int = iota
 	LOWEST
+	SEND
 	OR
 	AND
 	NOT
@@ -32,6 +33,7 @@ const (
 )
 
 var precedences = map[token.Type]int{
+	token.SEND:       SEND,
 	token.OR:         OR,
 	token.AND:        AND,
 	token.NOT:        NOT,
@@ -93,6 +95,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.WHILE, p.parseWhileExpression)
 	p.registerPrefix(token.IMPORT, p.parseImportExpression)
 	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
+	p.registerPrefix(token.ACTOR, p.parseActorExpression)
 
 	p.infixParseFns = make(map[token.Type]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
@@ -129,6 +132,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.BIND, p.parseBindExpression)
 	p.registerInfix(token.ASSIGN, p.parseAssignmentExpression)
 	p.registerInfix(token.DOT, p.parseSelectorExpression)
+	p.registerInfix(token.SEND, p.parseSendExpression)
 
 	// Read two tokens, so curToken and peekToken are both set
 	p.nextToken()
@@ -334,6 +338,15 @@ func (p *Parser) parseNull() ast.Expression {
 	return &ast.Null{Token: p.curToken}
 }
 
+func (p *Parser) parseStart() ast.Expression {
+	return &ast.Start{Token: p.curToken}
+}
+func (p *Parser) parseStop() ast.Expression {
+	return &ast.Stop{Token: p.curToken}
+}
+func (p *Parser) parseNoop() ast.Expression {
+	return &ast.Noop{Token: p.curToken}
+}
 func (p *Parser) parseGroupedExpression() ast.Expression {
 	p.nextToken()
 
@@ -410,6 +423,23 @@ func (p *Parser) parseWhileExpression() ast.Expression {
 	}
 
 	expression.Consequence = p.parseBlockStatement()
+
+	return expression
+}
+
+func (p *Parser) parseActorExpression() ast.Expression {
+	expression := &ast.ActorExpression{Token: p.curToken}
+
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	p.nextToken()
+	expression.Handler = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
 
 	return expression
 }
@@ -537,6 +567,12 @@ func (p *Parser) parseExpressionList(end token.Type) []ast.Expression {
 	}
 
 	return list
+}
+
+func (p *Parser) parseSendExpression(exp ast.Expression) ast.Expression {
+	p.nextToken()
+	msg := p.parseExpression(LOWEST)
+	return &ast.SendExpression{Actor: exp, Message: msg}
 }
 
 func (p *Parser) parseSelectorExpression(exp ast.Expression) ast.Expression {

@@ -135,6 +135,11 @@ func (l *Lexer) NextToken() token.Token {
 			l.readChar()
 			literal := string(ch) + string(l.ch)
 			tok = token.Token{Type: token.LeftShift, Literal: literal}
+		} else if l.peekChar() == '-' {
+			ch := l.ch
+			l.readChar()
+			literal := string(ch) + string(l.ch)
+			tok = token.Token{Type: token.SEND, Literal: literal}
 		} else {
 			tok = newToken(token.LT, l.ch)
 		}

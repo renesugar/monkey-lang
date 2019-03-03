@@ -102,6 +102,8 @@ const (
 	COLON = ":"
 	// DOT a dot
 	DOT = "."
+	// SEND the send operator (Actor)
+	SEND = "<-"
 
 	// LPAREN a left paranthesis
 	LPAREN = "("
@@ -119,6 +121,9 @@ const (
 	//
 	// Keywords
 	//
+
+	// ACTOR the `actor` keyword (actor)
+	ACTOR = "ACTOR"
 
 	// FUNCTION the `fn` keyword (function)
 	FUNCTION = "FUNCTION"
@@ -141,6 +146,7 @@ const (
 )
 
 var keywords = map[string]Type{
+	"actor":  ACTOR,
 	"fn":     FUNCTION,
 	"true":   TRUE,
 	"false":  FALSE,

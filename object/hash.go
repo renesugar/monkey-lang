@@ -51,6 +51,11 @@ type Hash struct {
 	Pairs map[HashKey]HashPair
 }
 
+func NewHash() *Hash {
+	pairs := make(map[HashKey]HashPair)
+	return &Hash{Pairs: pairs}
+}
+
 func (h *Hash) Len() int {
 	return len(h.Pairs)
 }
